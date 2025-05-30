@@ -1,0 +1,60 @@
+{
+  "name": "poppy-idea-engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered idea development tool with self-improving capabilities and comprehensive MCP server integration",
+  "keywords": [
+    "ai",
+    "ideas",
+    "self-improvement",
+    "machine-learning",
+    "anthropic",
+    "supabase",
+    "mcp-servers",
+    "error-monitoring",
+    "browser-devtools",
+    "sentry",
+    "debugging",
+    "development-tools"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "mcp:browser-devtools": "cd mcp-servers/browser-devtools && node index.js",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org your-org --project your-project ./build"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@sentry/nextjs": "^9.22.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.8",
+    "ai": "^4.3.16",
+    "lucide-react": "^0.511.0",
+    "next": "15.3.2",
+    "openai": "^4.103.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "private"
+  },
+  "author": "Christian Butler",
+  "license": "UNLICENSED"
+}
