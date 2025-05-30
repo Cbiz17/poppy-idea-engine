@@ -1,31 +1,56 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Custom animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes pulse-purple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(147, 51, 234, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+  }
 }
 
-/* COMPREHENSIVE FIX: Force black text in ALL inputs and textareas across the entire application */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom utility classes */
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-pulse-purple {
+  animation: pulse-purple 2s infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Force black text in all inputs */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -47,7 +72,7 @@ select {
   background-color: #ffffff !important;
 }
 
-/* Ensure placeholder text is visible but lighter */
+/* Placeholder text */
 input::placeholder,
 textarea::placeholder {
   color: #9CA3AF !important;
@@ -55,7 +80,7 @@ textarea::placeholder {
   -webkit-text-fill-color: #9CA3AF !important;
 }
 
-/* Fix for when inputs are focused */
+/* Focus states */
 input:focus,
 textarea:focus,
 select:focus {
@@ -64,7 +89,7 @@ select:focus {
   -webkit-text-fill-color: #000000 !important;
 }
 
-/* Fix for disabled inputs (make them slightly gray but still readable) */
+/* Disabled states */
 input:disabled,
 textarea:disabled,
 select:disabled {
@@ -74,110 +99,24 @@ select:disabled {
   background-color: #F3F4F6 !important;
 }
 
-/* Fix for Safari/Chrome autofill */
+/* Autofill fixes */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
-input:-webkit-autofill:active,
-textarea:-webkit-autofill,
-textarea:-webkit-autofill:hover,
-textarea:-webkit-autofill:focus,
-textarea:-webkit-autofill:active,
-select:-webkit-autofill,
-select:-webkit-autofill:hover,
-select:-webkit-autofill:focus,
-select:-webkit-autofill:active {
+input:-webkit-autofill:active {
   -webkit-text-fill-color: #000000 !important;
   -webkit-box-shadow: 0 0 0 30px white inset !important;
   background-color: #ffffff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* Override any dark mode effects on inputs */
+/* Dark mode overrides */
 @media (prefers-color-scheme: dark) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="search"],
-  input[type="date"],
-  input[type="time"],
-  input[type="datetime-local"],
-  input[type="month"],
-  input[type="week"],
-  input:not([type]),
+  input,
   textarea,
   select {
     color: #000000 !important;
     background-color: #ffffff !important;
     -webkit-text-fill-color: #000000 !important;
   }
-}
-
-/* Specific fix for select dropdowns */
-select option {
-  color: #000000 !important;
-  background-color: #ffffff !important;
-}
-
-/* Legacy modal-input class for backwards compatibility */
-.modal-input {
-  color: #000000 !important;
-  opacity: 1 !important;
-  -webkit-text-fill-color: #000000 !important;
-}
-
-.modal-input::placeholder {
-  color: #9CA3AF !important;
-  opacity: 1 !important;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out;
-}
-
-/* Pulse animation for send button */
-@keyframes pulse-purple {
-  0% {
-    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(147, 51, 234, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
-  }
-}
-
-.animate-pulse-purple {
-  animation: pulse-purple 2s infinite;
-}
-
-/* Slide up animation for tooltips */
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
 }

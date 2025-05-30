@@ -1,0 +1,9 @@
+        // Set the idea context
+        if (conversation.ideas) {
+          setCurrentIdeaContext({
+            id: conversation.ideas.id,
+            title: conversation.ideas.title,
+            content: conversation.ideas.content,
+            category: conversation.ideas.category
+          });
+        }

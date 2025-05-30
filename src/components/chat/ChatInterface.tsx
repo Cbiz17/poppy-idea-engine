@@ -158,7 +158,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
       };
 
       // Process last conversation
-      if (lastConv?.conversation_messages?.length > 0) {
+      if (lastConv && lastConv.conversation_messages && Array.isArray(lastConv.conversation_messages) && lastConv.conversation_messages.length > 0) {
         const messages = Array.isArray(lastConv.conversation_messages) ? lastConv.conversation_messages : [];
         const lastUserMessage = messages
           .filter((m: any) => m.role === 'user')
