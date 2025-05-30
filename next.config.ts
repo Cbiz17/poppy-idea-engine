@@ -30,6 +30,8 @@ export default withSentryConfig(nextConfig, {
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true,
 
-  // Hides source maps from generated client bundles
-  hideSourceMaps: true,
+  // Control source map generation
+  sourcemaps: {
+    disable: true
+  },
 });
