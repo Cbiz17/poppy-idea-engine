@@ -266,7 +266,18 @@ export async function GET(req: Request) {
 }
 
 // Helper functions for visualization
-function transformToNodes(historyTree: any[]) {
+interface HistoryTreeItem {
+  history_id: string;
+  change_summary?: string;
+  development_type: string;
+  branch_name?: string;
+  depth: number;
+  created_at: string;
+  version_number: number;
+  parent_id?: string;
+}
+
+function transformToNodes(historyTree: HistoryTreeItem[]) {
   return historyTree.map(item => ({
     id: item.history_id,
     label: item.change_summary || 'Development',
@@ -278,7 +289,7 @@ function transformToNodes(historyTree: any[]) {
   }))
 }
 
-function transformToLinks(historyTree: any[]) {
+function transformToLinks(historyTree: HistoryTreeItem[]) {
   return historyTree
     .filter(item => item.parent_id)
     .map(item => ({

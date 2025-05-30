@@ -56,7 +56,15 @@ export async function PATCH(
     }
 
     // Update the idea
-    const updateData: any = {
+    interface UpdateData {
+      title: string;
+      content: string;
+      category: string;
+      updated_at: string;
+      embedding?: any;
+    }
+    
+    const updateData: UpdateData = {
       title,
       content,
       category,
@@ -172,7 +180,13 @@ export async function PATCH(
 }
 
 // Helper functions
-function determineDevelopmentType(oldIdea: any, newIdea: any): string {
+interface IdeaData {
+  title: string;
+  content: string;
+  category: string;
+}
+
+function determineDevelopmentType(oldIdea: IdeaData, newIdea: IdeaData): string {
   const contentChanged = oldIdea.content !== newIdea.content;
   const titleChanged = oldIdea.title !== newIdea.title;
   const categoryChanged = oldIdea.category !== newIdea.category;
@@ -192,7 +206,7 @@ function determineDevelopmentType(oldIdea: any, newIdea: any): string {
   }
 }
 
-function generateChangeSummary(oldIdea: any, newIdea: any): string {
+function generateChangeSummary(oldIdea: IdeaData, newIdea: IdeaData): string {
   const changes = [];
   
   if (oldIdea.title !== newIdea.title) {

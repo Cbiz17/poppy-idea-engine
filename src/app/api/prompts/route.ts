@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function GET(req: Request) {
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
   }
 }
 
-async function analyzeAndImprovePrompts(supabase: any) {
+async function analyzeAndImprovePrompts(supabase: SupabaseClient) {
   try {
     // 1. Get recent feedback data
     const { data: recentFeedback } = await supabase
@@ -148,7 +149,13 @@ async function analyzeAndImprovePrompts(supabase: any) {
   }
 }
 
-async function generateImprovedPrompt(highRated: any[], lowRated: any[]) {
+interface FeedbackResponse {
+  content: string;
+  rating: number;
+  tags: string[];
+}
+
+async function generateImprovedPrompt(highRated: FeedbackResponse[], lowRated: FeedbackResponse[]): Promise<any | null> {
   try {
     // Create analysis prompt for Claude
     const analysisPrompt = `Analyze these AI response patterns to create an improved system prompt:
@@ -214,7 +221,7 @@ Respond with JSON:
   }
 }
 
-async function getNextPromptVersion(supabase: any): Promise<number> {
+async function getNextPromptVersion(supabase: SupabaseClient): Promise<number> {
   const { data } = await supabase
     .from('dynamic_prompts')
     .select('prompt_version')
@@ -226,7 +233,7 @@ async function getNextPromptVersion(supabase: any): Promise<number> {
   return (data?.prompt_version || 0) + 1;
 }
 
-async function createPromptVariant(supabase: any, content: string, description: string) {
+async function createPromptVariant(supabase: SupabaseClient, content: string, description: string) {
   const { data, error } = await supabase
     .from('dynamic_prompts')
     .insert({

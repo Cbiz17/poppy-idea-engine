@@ -1,3 +1,4 @@
+import { SupabaseClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export const runtime = 'edge';
@@ -5,6 +6,20 @@ export const runtime = 'edge';
 interface DetectionRequest {
   messages: Array<{role: string, content: string}>;
   timeThresholdHours?: number;
+}
+
+interface Idea {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  updated_at: string;
+}
+
+interface DevelopmentHistory {
+  development_type: string;
+  change_summary: string;
+  created_at: string;
 }
 
 export async function POST(req: Request) {
@@ -55,7 +70,7 @@ export async function POST(req: Request) {
 }
 
 async function detectConversationContinuation(
-  supabase: any,
+  supabase: SupabaseClient,
   userId: string,
   userMessages: string[],
   timeThresholdHours: number
@@ -124,7 +139,7 @@ async function detectConversationContinuation(
       suggestedAction,
       detectionMethod: 'smart_detection',
       timeSinceLastUpdate: timeSinceUpdate,
-      previousDevelopments: developmentHistory?.map(h => ({
+      previousDevelopments: developmentHistory?.map((h: DevelopmentHistory) => ({
         date: new Date(h.created_at).toLocaleDateString(),
         summary: h.change_summary || `${h.development_type} development`,
         type: h.development_type
@@ -137,7 +152,7 @@ async function detectConversationContinuation(
   }
 }
 
-function calculateMatchConfidence(userText: string, idea: any): number {
+function calculateMatchConfidence(userText: string, idea: Idea): number {
   const ideaText = `${idea.title} ${idea.content}`.toLowerCase();
   let confidence = 0;
 
@@ -203,7 +218,7 @@ function getCategoryTerms(category: string): string[] {
   return categoryMap[category] || ['general', 'idea', 'concept', 'plan'];
 }
 
-function determineSuggestedAction(confidence: number, userText: string, idea: any): 'update' | 'merge' | 'new_variation' {
+function determineSuggestedAction(confidence: number, userText: string, idea: Idea): 'update' | 'merge' | 'new_variation' {
   // High confidence + continuation indicators = update
   if (confidence > 0.7 && (userText.includes('continue') || userText.includes('build') || userText.includes('expand'))) {
     return 'update';

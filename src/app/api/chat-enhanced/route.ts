@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 const anthropic = new Anthropic({
@@ -115,7 +116,7 @@ export async function POST(req: Request) {
   }
 }
 
-async function getDynamicSystemPrompt(supabase: any, userId?: string, messages?: ChatMessage[]): Promise<string> {
+async function getDynamicSystemPrompt(supabase: SupabaseClient, userId?: string, messages?: ChatMessage[]): Promise<string> {
   try {
     // Analyze conversation context to determine the best prompt
     const conversationContext = analyzeConversationContext(messages || []);
@@ -166,7 +167,7 @@ function analyzeConversationContext(messages: ChatMessage[]) {
   };
 }
 
-async function getRelevantLearningPatterns(supabase: any, messages: ChatMessage[]) {
+async function getRelevantLearningPatterns(supabase: SupabaseClient, messages: ChatMessage[]) {
   try {
     // Create embedding for current conversation context
     const conversationSummary = messages.slice(-3).map(m => m.content).join(' ');
@@ -218,7 +219,7 @@ ${patternGuidance}`;
   return systemMessage;
 }
 
-async function trackPatternUsage(supabase: any, patterns: any[], userId: string) {
+async function trackPatternUsage(supabase: SupabaseClient, patterns: any[], userId: string) {
   try {
     for (const pattern of patterns) {
       await supabase

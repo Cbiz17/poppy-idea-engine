@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function POST(req: Request) {
@@ -152,7 +153,7 @@ export async function POST(req: Request) {
 }
 
 // Async function to analyze patterns and update learning
-async function analyzeFeedbackPattern(supabase: any, userId: string, feedbackType: string, feedbackValue: number) {
+async function analyzeFeedbackPattern(supabase: SupabaseClient, userId: string, feedbackType: string, feedbackValue: number) {
   try {
     // Analyze recent feedback patterns
     const { data: recentFeedback } = await supabase
@@ -187,7 +188,15 @@ async function analyzeFeedbackPattern(supabase: any, userId: string, feedbackTyp
   }
 }
 
-async function extractAndStoreLearningPattern(supabase: any, examples: any[], patternType: string) {
+interface FeedbackExample {
+  content: string;
+  context?: string[];
+  satisfaction: number;
+  rating?: number;
+  tags?: string[];
+}
+
+async function extractAndStoreLearningPattern(supabase: SupabaseClient, examples: FeedbackExample[], patternType: string) {
   try {
     // Create prompt for Claude to analyze patterns
     const analysisPrompt = `Analyze these successful AI responses and extract common patterns:
