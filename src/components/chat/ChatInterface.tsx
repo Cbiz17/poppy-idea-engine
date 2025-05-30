@@ -1028,7 +1028,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           setMessages(prevMessages => 
             prevMessages.map(msg => 
               msg.id === userMessage.id 
-                ? { ...msg, id: userMessageDbId } 
+                ? { ...msg, id: userMessageDbId || msg.id }
                 : msg
             )
           )
