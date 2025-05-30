@@ -867,7 +867,7 @@ export default function IdeasGallery({ user, ideas: initialIdeas }: IdeasGallery
           }}
           ideaId={selectedIdeaForShare.id}
           ideaTitle={selectedIdeaForShare.title}
-          currentVisibility={selectedIdeaForShare.visibility || 'private'}
+          currentVisibility={(selectedIdeaForShare as any).visibility || 'private'}
           onVisibilityChange={(newVisibility) => handleVisibilityChange(selectedIdeaForShare.id, newVisibility)}
         />
       )}
