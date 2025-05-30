@@ -552,15 +552,15 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
       if (conversation?.idea_id && conversation.ideas) {
         // Set the idea context
         setCurrentIdeaContext({
-          id: conversation.ideas.id,
-          title: conversation.ideas.title,
-          content: conversation.ideas.content,
-          category: conversation.ideas.category
+          id: conversation.ideas[0].id,
+          title: conversation.ideas[0].title,
+          content: conversation.ideas[0].content,
+          category: conversation.ideas[0].category
         });
         
         devLogger.info('ChatInterface', 'Loaded idea context from conversation', {
-          ideaId: conversation.ideas.id,
-          ideaTitle: conversation.ideas.title
+          ideaId: conversation.ideas[0].id,
+          ideaTitle: conversation.ideas[0].title
         });
       } else if (conversation?.idea_id && !conversation.ideas) {
         // The conversation has an idea_id but the join failed - fetch the idea directly
