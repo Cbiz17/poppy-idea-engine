@@ -36,6 +36,7 @@ export async function POST(req: Request) {
     }
 
     // Get message details to find conversation
+    let conversationId: string | null = null;
     const { data: message, error: messageError } = await supabase
       .from('conversation_messages')
       .select('conversation_id, user_id')
@@ -72,7 +73,8 @@ export async function POST(req: Request) {
           .single();
           
         if (newMessage) {
-          message.conversation_id = recentConv.id;
+          // Successfully created placeholder message
+          conversationId = recentConv.id;
         } else {
           // If we can't create the message, just acknowledge the feedback
           return NextResponse.json({ 
@@ -97,20 +99,33 @@ export async function POST(req: Request) {
           message: 'Feedback acknowledged (no conversation)' 
         });
       }
+    } else {
+      // Message exists, verify it belongs to the user
+      if (message.user_id !== user.id) {
+        console.error('Message does not belong to user');
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+      conversationId = message.conversation_id;
     }
 
-    // Verify the message belongs to the user
-    if (message.user_id !== user.id) {
-      console.error('Message does not belong to user');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    // Store feedback if we have a conversation ID
+    if (!conversationId) {
+      return NextResponse.json({ 
+        success: true, 
+        feedback: { 
+          id: 'no-conv-' + Date.now(),
+          feedback_type: feedbackType,
+          feedback_value: feedbackValue
+        },
+        message: 'Feedback acknowledged (no conversation)' 
+      });
     }
 
-    // Store feedback
     const { data: feedback, error } = await supabase
       .from('message_feedback')
       .insert({
         user_id: user.id,
-        conversation_id: message.conversation_id,
+        conversation_id: conversationId,
         message_id: messageId,
         feedback_type: feedbackType,
         feedback_value: feedbackValue,
