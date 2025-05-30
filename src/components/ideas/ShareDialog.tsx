@@ -82,8 +82,8 @@ export default function ShareDialog({
 
       const users = data?.map(share => ({
         id: share.shared_with_user_id || share.id,
-        email: share.profiles?.email || share.shared_with_email || '',
-        full_name: share.profiles?.full_name,
+        email: share.profiles?.[0]?.email || share.shared_with_email || '',
+        full_name: share.profiles?.[0]?.full_name,
         permission_level: share.permission_level
       })) || []
 
