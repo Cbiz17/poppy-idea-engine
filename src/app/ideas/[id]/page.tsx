@@ -6,9 +6,9 @@ import IdeaDetailView from '@/components/ideas/IdeaDetailView'
 export default async function IdeaDetailPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const { id } = params
+  const { id } = await params
   const supabase = await createServerSupabaseClient()
   
   const { data: { user } } = await supabase.auth.getUser()

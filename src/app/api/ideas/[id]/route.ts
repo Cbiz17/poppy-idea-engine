@@ -6,6 +6,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { title, content, category, conversationId, developmentType, metadata } = await req.json();
     const supabase = await createServerSupabaseClient();
     
@@ -221,6 +222,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { title, content, category, saveType, originalId } = await req.json();
     const supabase = await createServerSupabaseClient();
     
@@ -304,6 +306,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createServerSupabaseClient();
     
     const { data: { user }, error: userError } = await supabase.auth.getUser();
