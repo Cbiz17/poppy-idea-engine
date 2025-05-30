@@ -3,8 +3,9 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const supabase = await createServerSupabaseClient();
     
@@ -18,7 +19,7 @@ export async function GET(
     const { data: history, error } = await supabase
       .from('idea_development_history')
       .select('*')
-      .eq('idea_id', params.id)
+      .eq('idea_id', id)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
