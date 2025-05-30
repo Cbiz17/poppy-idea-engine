@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { visibility } = await req.json();
@@ -25,7 +25,7 @@ export async function PATCH(
     const { data: existingIdea, error: fetchError } = await supabase
       .from('ideas')
       .select('user_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (fetchError || !existingIdea) {
@@ -43,7 +43,7 @@ export async function PATCH(
         visibility,
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -57,7 +57,7 @@ export async function PATCH(
       await supabase
         .from('idea_discovery_stats')
         .upsert({ 
-          idea_id: params.id,
+          idea_id: id,
           view_count: 0,
           share_count: 0,
           remix_count: 0,

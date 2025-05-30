@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { title, content, category, conversationId, developmentType, metadata } = await req.json();
@@ -25,7 +25,7 @@ export async function PATCH(
     const { data: existingIdea, error: fetchError } = await supabase
       .from('ideas')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (fetchError || !existingIdea) {
@@ -69,7 +69,7 @@ export async function PATCH(
     const { data: updatedIdea, error: updateError } = await supabase
       .from('ideas')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -85,7 +85,7 @@ export async function PATCH(
         await supabase
           .from('idea_contributors')
           .upsert({
-            idea_id: params.id,
+            idea_id: id,
             user_id: user.id,
             contribution_type: 'edit',
             contributed_at: new Date().toISOString(),
@@ -109,7 +109,7 @@ export async function PATCH(
       const { data: latestHistory } = await supabase
         .from('idea_development_history')
         .select('version_number')
-        .eq('idea_id', params.id)
+        .eq('idea_id', id)
         .order('version_number', { ascending: false })
         .limit(1)
         .single();
@@ -125,7 +125,7 @@ export async function PATCH(
       await supabase
         .from('idea_development_history')
         .insert({
-          idea_id: params.id,
+          idea_id: id,
           conversation_id: conversationId || null,
           user_id: user.id,
           previous_title: existingIdea.title,
@@ -152,7 +152,7 @@ export async function PATCH(
           development_count: newVersionNumber,
           last_activity: new Date().toISOString()
         })
-        .eq('id', params.id);
+        .eq('id', id);
 
       // Return updated idea with development count
       updatedIdea.development_count = newVersionNumber;
@@ -218,7 +218,7 @@ function generateChangeSummary(oldIdea: any, newIdea: any): string {
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { title, content, category, saveType, originalId } = await req.json();
@@ -301,7 +301,7 @@ export async function POST(
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerSupabaseClient();
@@ -315,7 +315,7 @@ export async function GET(
     const { data: idea, error } = await supabase
       .from('ideas')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single();
 
