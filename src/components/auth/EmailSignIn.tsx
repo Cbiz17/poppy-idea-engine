@@ -43,7 +43,7 @@ export default function EmailSignIn() {
     
     try {
       if (mode === 'signin') {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
