@@ -716,13 +716,13 @@ export default function IdeasGallery({ user, ideas: initialIdeas }: IdeasGallery
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          {idea.visibility && idea.visibility !== 'private' ? (
+                          {(idea as any).visibility && (idea as any).visibility !== 'private' ? (
                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                              idea.visibility === 'public' 
+                              (idea as any).visibility === 'public' 
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-blue-100 text-blue-800'
                             }`}>
-                              {idea.visibility === 'public' ? (
+                              {(idea as any).visibility === 'public' ? (
                                 <><Globe className="w-3 h-3" /> Public</>
                               ) : (
                                 <><Users className="w-3 h-3" /> Shared</>
