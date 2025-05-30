@@ -22,7 +22,7 @@ export function initBrowserDevTools() {
     const originalConsole = { ...console };
     ['log', 'warn', 'error', 'debug', 'info'].forEach((method) => {
       (console as any)[method] = (...args: any[]) => {
-        originalConsole[method](...args);
+        (originalConsole as any)[method](...args);
         
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({
