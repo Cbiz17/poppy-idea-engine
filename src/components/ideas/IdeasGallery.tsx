@@ -424,6 +424,14 @@ export default function IdeasGallery({ user, ideas: initialIdeas }: IdeasGallery
           
           <div className="flex items-center gap-4">
             <Link
+              href="/admin"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Admin
+            </Link>
+            
+            <Link
               href="/discover"
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
             >
