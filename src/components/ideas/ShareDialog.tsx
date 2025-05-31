@@ -48,6 +48,7 @@ export default function ShareDialog({
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [shareLink, setShareLink] = useState('')
   const [linkCopied, setLinkCopied] = useState(false)
   
@@ -167,9 +168,18 @@ export default function ShareDialog({
           await handleVisibilityChange('shared')
         }
         
+        // Show success message
+        setError(null)
+        setSuccess(`Shared with ${email}`)
+        
         // Reload shared users
         await loadSharedUsers()
         setEmail('')
+        
+        // Close dialog after successful share
+        setTimeout(() => {
+          onClose()
+        }, 1500)
       }
     } catch (error: any) {
       console.error('Error sharing idea:', error)
@@ -322,6 +332,13 @@ export default function ShareDialog({
                 <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
                   <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              {success && (
+                <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-green-700">{success}</p>
                 </div>
               )}
 
