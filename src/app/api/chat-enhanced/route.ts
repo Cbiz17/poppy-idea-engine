@@ -15,7 +15,7 @@ interface ChatMessage {
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, userContext, feedbackInsights } = await req.json();
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return new Response('Missing ANTHROPIC_API_KEY.', { status: 500 });
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     // Get dynamic system prompt based on learning patterns
-    const systemMessage = await getDynamicSystemPrompt(supabase, user?.id, messages);
+    const systemMessage = await getDynamicSystemPrompt(supabase, user?.id, messages, userContext, feedbackInsights);
 
     // Get relevant learning patterns for this conversation context
     const relevantPatterns = await getRelevantLearningPatterns(supabase, messages);
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
   }
 }
 
-async function getDynamicSystemPrompt(supabase: SupabaseClient, userId?: string, messages?: ChatMessage[]): Promise<string> {
+async function getDynamicSystemPrompt(supabase: SupabaseClient, userId?: string, messages?: ChatMessage[], userContext?: any, feedbackInsights?: any): Promise<string> {
   try {
     // Analyze conversation context to determine the best prompt
     const conversationContext = analyzeConversationContext(messages || []);
@@ -146,6 +146,23 @@ async function getDynamicSystemPrompt(supabase: SupabaseClient, userId?: string,
 Be encouraging, insightful, and help them organize their thoughts into concrete, actionable ideas.`;
     }
 
+    // Add personalization based on user context
+    if (userContext) {
+      const style = userContext.preferences?.communicationStyle || "balanced";
+      const length = userContext.preferences?.responseLength || "adaptive";
+      const interests = userContext.interests?.slice(0, 3).join(", ") || "various topics";
+      
+      return `You are Claude, an AI assistant for the Poppy Idea Engine, personalized for this specific user.
+
+User Preferences:
+- Communication style: ${style} (adjust formality accordingly)
+- Response length: ${length} (provide ${length === "concise" ? "brief" : length === "detailed" ? "comprehensive" : "appropriately sized"} responses)
+- Known interests: ${interests}
+${feedbackInsights?.overallSatisfaction < 3 ? "- Note: User satisfaction has been low. Focus on clarity and relevance." : ""}
+${feedbackInsights?.preferredResponseStyle ? `- Preferred style: ${feedbackInsights.preferredResponseStyle.tone} tone with ${feedbackInsights.preferredResponseStyle.detail} detail` : ""}
+
+Your goal is to help this user explore, develop, and organize their ideas in a way that resonates with their personal style. Be ${style === "casual" ? "friendly and approachable" : style === "formal" ? "professional and structured" : "balanced and adaptive"}.`;
+    }
     // Default fallback
     return "You are Claude, an AI assistant for the Poppy Idea Engine. Your goal is to help users explore, develop, and organize their ideas. Be insightful, encouraging, and help them break down complex thoughts into actionable concepts.";
 

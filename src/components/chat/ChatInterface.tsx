@@ -16,6 +16,11 @@ import {
   useSpecialCommands,
   type Message,
   type Idea
+,
+  usePersonalContext,
+  useFeedbackAnalysis,
+  type UserContext,
+  type FeedbackInsights
 } from '@/hooks'
 
 // Components
@@ -110,6 +115,19 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   } = useWelcome(user)
 
   const { handleSpecialCommands } = useSpecialCommands({
+
+  const {
+    userContext,
+    trackUserInterest,
+    getPersonalizedSuggestions
+  } = usePersonalContext({ user })
+
+  const {
+    insights,
+    conversationQuality,
+    submitFeedback,
+    getImprovementSuggestions
+  } = useFeedbackAnalysis({ user, conversationId: currentConversationId })
     currentIdeaContext,
     fetchIdeaHistory: fetchHistory,
     addMessage

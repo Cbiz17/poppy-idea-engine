@@ -14,3 +14,9 @@ export { useWelcome } from './useWelcome'
 export type { WelcomeData } from './useWelcome'
 
 export { useSpecialCommands } from './useSpecialCommands'
+
+export { usePersonalContext } from './usePersonalContext'
+export type { UserContext, UserPreferences } from './usePersonalContext'
+
+export { useFeedbackAnalysis } from './useFeedbackAnalysis'
+export type { FeedbackInsights, ConversationQuality } from './useFeedbackAnalysis'
