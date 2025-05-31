@@ -115,6 +115,10 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   } = useWelcome(user)
 
   const { handleSpecialCommands } = useSpecialCommands({
+    currentIdeaContext,
+    fetchIdeaHistory: fetchHistory,
+    addMessage
+  });
 
   const {
     userContext,
@@ -128,10 +132,6 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     submitFeedback,
     getImprovementSuggestions
   } = useFeedbackAnalysis({ user, conversationId: currentConversationId })
-    currentIdeaContext,
-    fetchIdeaHistory: fetchHistory,
-    addMessage
-  })
 
   // Scroll to bottom when messages change
   useEffect(() => {
