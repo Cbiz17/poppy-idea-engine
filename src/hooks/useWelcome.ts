@@ -1,9 +1,21 @@
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
-import { getTimeAgo, generateSuggestions } from '@/utils/ideaProcessing'
+import { generateSuggestions } from '@/utils/ideaProcessing'
 import { getDefaultWelcomeMessage } from '@/utils/messageHelpers'
 import { Message } from './useChat'
+// Simple time ago function
+function getTimeAgo(date: Date): string {
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / (1000 * 60))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  
+  if (diffMins < 60) return `${diffMins} minutes ago`
+  if (diffHours < 24) return `${diffHours} hours ago`
+  return `${diffDays} days ago`
+}
 
 export interface WelcomeData {
   message: string

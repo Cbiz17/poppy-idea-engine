@@ -136,7 +136,7 @@ export function useFeedbackAnalysis({ user, conversationId }: UseFeedbackAnalysi
       if (error) throw error
 
       // Re-analyze after new feedback
-      await loadInsights()
+      // loadInsights will be called by useEffect when needed
       
       // Track learning pattern
       await createLearningPattern(messageId, feedbackType, value, tags)
@@ -203,7 +203,7 @@ export function useFeedbackAnalysis({ user, conversationId }: UseFeedbackAnalysi
       suggestions.push('I can provide clearer explanations - just ask me to elaborate')
     }
     
-    if (insights.preferredResponseStyle.length === 'short' && conversationQuality?.factors.detail > 0.7) {
+    if (insights?.preferredResponseStyle?.length === 'short' && conversationQuality?.factors.clarity > 0.7) {
       suggestions.push('I notice you prefer concise responses - I\'ll keep that in mind')
     }
     
@@ -228,7 +228,7 @@ export function useFeedbackAnalysis({ user, conversationId }: UseFeedbackAnalysi
   // Load insights on mount and when conversation changes
   useEffect(() => {
     loadInsights()
-  }, [conversationId])
+  }, [conversationId, loadInsights])
 
   return {
     insights,
