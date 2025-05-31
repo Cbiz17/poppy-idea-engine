@@ -66,6 +66,7 @@ export default function PromptsPage() {
           console.error('Error fetching feedback:', feedbackError)
           // Don't set error for feedback, as it's not critical
         } else {
+          console.log('Feedback data:', feedbackData) // Debug log
           setRecentFeedback(feedbackData || [])
         }
       } catch (err) {
