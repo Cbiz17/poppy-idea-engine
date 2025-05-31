@@ -1482,22 +1482,23 @@ Please respond with ONLY a JSON object in this exact format:
           </Link>
           
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => handleQuickSave()}
-              className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
-                hasValueableContent 
-                  ? 'text-purple-600 hover:text-purple-700 font-medium' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-              disabled={messages.length <= 1}
-              title={hasValueableContent ? 'Save valuable content' : 'Save conversation'}
-            >
-              <Save className="w-4 h-4" />
-              Save Idea
-              {hasValueableContent && (
-                <span className="inline-flex items-center justify-center w-2 h-2 bg-purple-600 rounded-full animate-pulse" />
-              )}
-            </button>
+            {messages.length > 1 && (
+              <button
+                onClick={() => handleQuickSave()}
+                className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                  hasValueableContent 
+                    ? 'text-purple-600 hover:text-purple-700 font-medium' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title={hasValueableContent ? 'Save valuable content' : 'Save conversation'}
+              >
+                <Save className="w-4 h-4" />
+                Save Idea
+                {hasValueableContent && (
+                  <span className="inline-flex items-center justify-center w-2 h-2 bg-purple-600 rounded-full animate-pulse" />
+                )}
+              </button>
+            )}
 
             <Link 
               href="/ideas"
