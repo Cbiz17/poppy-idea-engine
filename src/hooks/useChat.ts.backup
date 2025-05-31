@@ -33,27 +33,6 @@ export function useChat({ user, conversationId }: UseChatProps) {
     )
   }, [])
 
-  const generateEmbedding = async (text: string): Promise<number[] | null> => {
-    try {
-      const response = await fetch('/api/embed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      })
-      
-      if (!response.ok) {
-        console.error('Failed to generate embedding:', response.status)
-        return null
-      }
-      
-      const { embedding } = await response.json()
-      return embedding
-    } catch (error) {
-      console.error('Error generating embedding:', error)
-      return null
-    }
-  }
-
   const saveMessageToDatabase = useCallback(async (
     message: Message, 
     conversationId: string
@@ -64,9 +43,6 @@ export function useChat({ user, conversationId }: UseChatProps) {
     }
     
     try {
-      // Generate embedding for the message
-      const embedding = await generateEmbedding(message.content)
-      
       const { data, error } = await supabase
         .from('conversation_messages')
         .insert({
@@ -74,7 +50,7 @@ export function useChat({ user, conversationId }: UseChatProps) {
           user_id: user.id,
           role: message.role,
           content: message.content,
-          embedding: embedding,
+          embedding: null, // Simplified for now
           created_at: new Date().toISOString()
         })
         .select('id')
@@ -85,7 +61,6 @@ export function useChat({ user, conversationId }: UseChatProps) {
         return null
       }
       
-      console.log(`Message saved with embedding (${embedding ? 'success' : 'no embedding'})`)
       return data.id
     } catch (error) {
       console.error('Error in saveMessageToDatabase:', error)
@@ -123,17 +98,11 @@ export function useChat({ user, conversationId }: UseChatProps) {
     addMessage(assistantPlaceholder)
 
     try {
-      // Save user message with embedding
+      // Save user message
       const userMessageDbId = await saveMessageToDatabase(userMessage, conversationId)
       if (userMessageDbId) {
-        // Update the message ID to match database
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === userMessage.id 
-              ? { ...msg, id: userMessageDbId }
-              : msg
-          )
-        )
+        // Update the message with DB ID
+        updateMessage(userMessage.id, userMessage.content)
       }
 
       // Make API call
@@ -175,7 +144,7 @@ export function useChat({ user, conversationId }: UseChatProps) {
 
       streamedContent += decoder.decode()
       
-      // Save assistant message with embedding
+      // Save assistant message
       const assistantMessageDbId = await saveMessageToDatabase(
         { 
           ...assistantPlaceholder, 
@@ -186,13 +155,9 @@ export function useChat({ user, conversationId }: UseChatProps) {
       )
       
       if (assistantMessageDbId) {
-        // Update the message ID to match database
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === assistantMessageId 
-              ? { ...msg, id: assistantMessageDbId }
-              : msg
-          )
+        updateMessage(
+          assistantMessageId, 
+          streamedContent
         )
       }
 

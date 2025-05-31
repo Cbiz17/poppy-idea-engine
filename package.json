@@ -22,6 +22,7 @@
     "build": "next build --no-lint",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
     "mcp:browser-devtools": "cd mcp-servers/browser-devtools && node index.js",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org your-org --project your-project ./build"
   },

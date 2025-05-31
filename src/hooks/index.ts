@@ -9,3 +9,8 @@ export type { Idea } from './useIdeas'
 
 export { useContinuation } from './useContinuation'
 export type { ContinuationDetectionResult } from './useContinuation'
+
+export { useWelcome } from './useWelcome'
+export type { WelcomeData } from './useWelcome'
+
+export { useSpecialCommands } from './useSpecialCommands'
