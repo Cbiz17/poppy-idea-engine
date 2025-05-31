@@ -135,8 +135,13 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    // Only scroll if we're not showing modals
+    if (!isReviewModalOpen && !isEnhancedModalOpen) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      }, 100)
+    }
+  }, [messages, isReviewModalOpen, isEnhancedModalOpen])
 
   // Monitor for valuable content
   useEffect(() => {
@@ -538,7 +543,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex flex-col">
       <ChatHeader
         user={user}
         messagesLength={messages.length}
@@ -554,7 +559,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         />
       )}
 
-      <div className="max-w-4xl mx-auto h-[calc(100vh-80px)] flex flex-col">
+      <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col overflow-hidden">
         {currentIdeaContext && (
           <IdeaDevelopmentBanner
             currentIdeaContext={currentIdeaContext}
@@ -562,7 +567,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           />
         )}
         
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
