@@ -203,7 +203,7 @@ export function useFeedbackAnalysis({ user, conversationId }: UseFeedbackAnalysi
       suggestions.push('I can provide clearer explanations - just ask me to elaborate')
     }
     
-    if (insights?.preferredResponseStyle?.length === 'short' && conversationQuality?.factors.clarity > 0.7) {
+    if (insights?.preferredResponseStyle?.length === 'short' && conversationQuality?.factors?.clarity && conversationQuality.factors.clarity > 0.7) {
       suggestions.push('I notice you prefer concise responses - I\'ll keep that in mind')
     }
     
