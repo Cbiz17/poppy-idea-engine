@@ -113,6 +113,14 @@ export default function ShareDialog({
 
       setVisibility(newVisibility)
       onVisibilityChange(newVisibility)
+      
+      // Show success message for visibility change
+      if (newVisibility === 'shared') {
+        setSuccess('Idea is now shared with specific people')
+        setTimeout(() => {
+          setSuccess(null)
+        }, 3000)
+      }
 
       // Create discovery stats for public ideas
       if (newVisibility === 'public') {
