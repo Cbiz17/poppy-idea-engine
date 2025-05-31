@@ -128,7 +128,7 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link href="/chat" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
               <Settings className="w-5 h-5 text-white" />
             </div>
@@ -136,7 +136,7 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
               <h1 className="text-xl font-bold text-gray-900">Poppy Admin</h1>
               <p className="text-sm text-gray-600">Dynamic Prompts Management</p>
             </div>
-          </div>
+          </Link>
           
           <div className="flex items-center gap-4">
             <Link
