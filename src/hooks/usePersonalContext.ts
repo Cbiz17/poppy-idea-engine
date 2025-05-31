@@ -186,9 +186,9 @@ export function usePersonalContext({ user }: UsePersonalContextProps) {
 
 function buildUserContext(
   profile: any,
-  ideas: any[],
-  feedback: any[],
-  outcomes: any[]
+  ideas: any[] | null,
+  feedback: any[] | null,
+  outcomes: any[] | null
 ): UserContext {
   // Analyze idea categories
   const categoryCount: Record<string, number> = {}
@@ -203,7 +203,7 @@ function buildUserContext(
   const preferences = analyzePreferences(feedback || [])
   
   // Calculate average satisfaction
-  const avgSatisfaction = outcomes?.length > 0
+  const avgSatisfaction = outcomes?.length && outcomes.length > 0
     ? outcomes.reduce((sum, o) => sum + (o.satisfaction_score || 0), 0) / outcomes.length
     : 0
 
@@ -261,7 +261,7 @@ function extractInterestsFromContent(ideas: any[]): string[] {
   
   ideas.forEach(idea => {
     const words = idea.content.toLowerCase().split(/\s+/)
-    words.forEach(word => {
+    words.forEach((word: string) => {
       if (word.length > 5) { // Focus on meaningful words
         keywords[word] = (keywords[word] || 0) + 1
       }

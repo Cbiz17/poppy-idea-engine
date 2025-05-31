@@ -286,7 +286,7 @@ function extractInsights(feedback: any[]): FeedbackInsights {
   }
 }
 
-function analyzeResponseStyle(feedback: any[]) {
+function analyzeResponseStyle(feedback: any[]): FeedbackInsights['preferredResponseStyle'] {
   const lengths = feedback.map(f => f.conversation_messages?.content?.length || 0)
   const avgLength = lengths.reduce((a, b) => a + b, 0) / Math.max(lengths.length, 1)
   
@@ -296,12 +296,16 @@ function analyzeResponseStyle(feedback: any[]) {
     tagCounts[tag] = (tagCounts[tag] || 0) + 1
   })
   
+  const length: 'short' | 'medium' | 'long' = avgLength > 500 ? 'long' : avgLength > 200 ? 'medium' : 'short'
+  const tone: 'formal' | 'casual' | 'enthusiastic' = tagCounts['formal'] > tagCounts['casual'] ? 'formal' : 
+        tagCounts['enthusiastic'] > 5 ? 'enthusiastic' : 'casual'
+  const detail: 'high-level' | 'detailed' | 'step-by-step' = tagCounts['detailed'] > tagCounts['concise'] ? 'detailed' :
+          tagCounts['step-by-step'] > 3 ? 'step-by-step' : 'high-level'
+  
   return {
-    length: avgLength > 500 ? 'long' : avgLength > 200 ? 'medium' : 'short' as const,
-    tone: tagCounts['formal'] > tagCounts['casual'] ? 'formal' : 
-          tagCounts['enthusiastic'] > 5 ? 'enthusiastic' : 'casual' as const,
-    detail: tagCounts['detailed'] > tagCounts['concise'] ? 'detailed' :
-            tagCounts['step-by-step'] > 3 ? 'step-by-step' : 'high-level' as const
+    length,
+    tone,
+    detail
   }
 }
 
@@ -312,7 +316,7 @@ function extractSuccessfulTopics(feedback: any[]): string[] {
     const content = f.conversation_messages?.content || ''
     // Simple topic extraction - could be enhanced
     const words = content.toLowerCase().split(/\s+/)
-    words.forEach(word => {
+    words.forEach((word: string) => {
       if (word.length > 6) {
         topics[word] = (topics[word] || 0) + 1
       }
