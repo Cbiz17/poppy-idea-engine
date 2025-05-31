@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const EMBEDDING_MODEL = 'text-embedding-ada-002';
 
 export async function POST(req: Request) {
   try {
@@ -32,18 +39,15 @@ export async function POST(req: Request) {
     // Generate embedding
     let embedding = null;
     try {
-      const embedResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/embed`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({ text: `${title} ${content}` })
-      });
-      
-      if (embedResponse.ok) {
-        const { embedding: embedData } = await embedResponse.json();
-        embedding = embedData;
+      if (process.env.OPENAI_API_KEY) {
+        const inputText = `${title} ${content}`.replace(/\n/g, ' ');
+        
+        const embeddingResponse = await openai.embeddings.create({
+          model: EMBEDDING_MODEL,
+          input: inputText,
+        });
+        
+        embedding = embeddingResponse?.data?.[0]?.embedding;
       }
     } catch (embedError) {
       console.error('Error generating embedding:', embedError);
