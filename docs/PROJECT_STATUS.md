@@ -1,113 +1,182 @@
 # Poppy Idea Engine - Project Status
 
-Last Updated: May 31, 2025
+**Last Updated**: December 2024
 
-## 🚀 Deployment Status
+## 🚀 Current Deployment Status
 
 - **Production URL**: https://poppy-idea-engine.vercel.app
-- **Deployment Platform**: Vercel
-- **Status**: ✅ WORKING (Build successful, no TypeScript errors)
+- **Platform**: Vercel (automatic deployment from main branch)
+- **Database**: Supabase (PostgreSQL with vector extensions)
+- **AI Provider**: Anthropic Claude (Haiku model)
 
-## 📊 Database Status (Supabase)
+## ✅ Completed Features (What's Working)
 
-### ✅ All Required Tables Exist:
-- `profiles` - User profiles with Google OAuth
-- `ideas` - Main ideas storage with vector embeddings
-- `conversations` - Chat sessions
-- `conversation_messages` - Individual messages with embeddings
-- `idea_development_history` - Tracks how ideas evolve
-- `conversation_continuity` - Links continued conversations
-- `smart_save_suggestions` - AI-powered save suggestions
-- `message_feedback` - User feedback system
-- `user_actions` - Activity tracking
-- `conversation_outcomes` - Session metrics
+### 1. **Core Conversation System**
+- ✅ Real-time chat with Poppy AI
+- ✅ Full conversation history preservation
+- ✅ Message streaming for responsive feel
+- ✅ Conversation management (create, delete, continue)
 
-### ✅ RLS (Row Level Security) Policies:
-- All tables have proper RLS enabled
-- Users can only access their own data
-- Policies verified for: INSERT, SELECT, UPDATE, DELETE operations
+### 2. **Idea Management**
+- ✅ Save conversations as ideas
+- ✅ Ideas gallery with visual cards
+- ✅ Smart continuation detection
+- ✅ Version history tracking
+- ✅ Semantic search across ideas
 
-### ✅ Required Columns on Ideas Table:
-- `development_count` (integer) - Tracks version number
-- `last_activity` (timestamp) - For sorting/filtering
-- `archived` (boolean) - Soft delete functionality
-- `pinned` (boolean) - Priority ideas feature
+### 3. **A/B Testing System** *(NEW - Dec 2024)*
+- ✅ Complete A/B testing infrastructure for prompts
+- ✅ Dynamic prompt selection based on user assignment
+- ✅ Automatic user distribution (control/variant groups)
+- ✅ Real-time tracking of test impressions
+- ✅ Visual test management in admin panel
+- ✅ Test configuration (duration, sample size, traffic split)
 
-## 🔧 Recent Fixes Applied
+### 4. **Analytics Dashboard** *(NEW - Dec 2024)*
+- ✅ Comprehensive prompt performance metrics
+- ✅ Time-based filtering (24h, 7d, 30d, all time)
+- ✅ Performance trends and comparisons
+- ✅ SQL functions for efficient data aggregation
+- ✅ API endpoint for analytics data (`/api/analytics/prompts`)
+- ✅ Visual charts and metrics display
 
-### 1. TypeScript Errors (FIXED)
-- Fixed optional chaining for `conversationQuality.factors.clarity`
-- Added proper type annotations for forEach callbacks
-- Added null checks for `outcomes` parameter
-- All files pass `npm run type-check`
+### 5. **World-Class Admin Interface** *(UPDATED - Dec 2024)*
+- ✅ Redesigned with clear visual hierarchy
+- ✅ Active prompt displayed as hero section
+- ✅ Tab navigation (Prompt Management | Analytics & Insights)
+- ✅ One-click "Test in Chat" functionality
+- ✅ Intuitive activate/deactivate controls
+- ✅ Real-time feedback statistics
+- ✅ Professional UI with smooth animations
 
-### 2. Chat Interface Jumping (FIXED)
-- Changed layout to proper flexbox structure
-- Fixed scroll behavior with timing delays
-- Made chat input non-shrinkable with `flex-shrink-0`
-- Added `scroll-smooth` for better UX
+### 6. **Feedback System**
+- ✅ Thumbs up/down on messages
+- ✅ 5-star ratings
+- ✅ Contextual tags (helpful, creative, accurate)
+- ✅ Feedback drives prompt improvements
 
-## ✅ Core Features Working
+### 7. **Authentication & Security**
+- ✅ Google OAuth integration
+- ✅ Row-level security (RLS) on all tables
+- ✅ Complete user data isolation
 
-1. **Authentication**: Google OAuth via Supabase
-2. **Chat Interface**: Real-time conversation with Claude API
-3. **Save Ideas**: From chat to idea gallery
-4. **Update Ideas**: Continue conversations, track versions
-5. **Idea History**: `/history` command shows evolution
-6. **Smart Detection**: Automatically detects idea continuations
-7. **Feedback System**: Thumbs up/down, ratings, tags
+## 🔄 In Progress / Partially Complete
 
-## 🛠️ Development Commands
+### 1. **Prompt-Conversation Tracking**
+- ⚠️ Need to update chat routes to store `prompt_id` in conversations table
+- ⚠️ This will link feedback to specific prompt versions for better analytics
 
-```bash
-# Check TypeScript errors before pushing
-npm run type-check
+### 2. **Real-Time Prompt Indicator**
+- ✅ Component created (`PromptIndicator.tsx`)
+- ⚠️ Not yet integrated into chat interface
+- ⚠️ Will show users which prompt version they're using
 
-# Run development server
-npm run dev
+### 3. **Enhanced Logging**
+- ✅ DevPanel component created
+- ⚠️ Not integrated into main layout
+- ⚠️ Database schema for dev_logs not deployed
 
-# Build for production
-npm run build
+## 📊 Database Schema Updates
+
+### Recent Additions (December 2024):
+```sql
+-- Analytics support
+ALTER TABLE conversations ADD COLUMN prompt_id UUID;
+ALTER TABLE conversation_messages ADD COLUMN response_time_ms INTEGER;
+ALTER TABLE message_feedback ADD COLUMN feedback_tags TEXT[];
+
+-- Analytics functions
+- get_prompt_performance_metrics()
+- get_prompt_daily_metrics()
+- get_top_feedback_tags()
+
+-- A/B Testing enhancements
+- ab_test_results table
+- user_ab_preferences table
+- Enhanced ab_tests.test_config JSONB
 ```
 
-## 📁 Key Files to Know
+## 🐛 Known Issues
 
-- `/src/hooks/useIdeas.ts` - Idea management logic
-- `/src/hooks/useFeedbackAnalysis.ts` - Feedback analytics
-- `/src/hooks/usePersonalContext.ts` - User preference tracking
-- `/src/components/chat/ChatInterface.tsx` - Main chat UI
-- `/database/*.sql` - All database schemas
+1. **TypeScript Compilation**: Always run `npm run build` before deploying
+2. **Feedback Tags**: Currently using placeholder tags, need UI for actual tag collection
+3. **Response Time Tracking**: Column exists but not populated yet
 
-## ⚠️ Known Requirements
+## 📝 Next Steps (Priority Order)
 
-1. **Database Setup Order** (if starting fresh):
-   - `database-setup.sql`
-   - `self-improvement-schema.sql`
-   - `02-conversation-history-tables.sql`
-   - `04-enhanced-idea-tracking.sql`
+### Immediate (This Week)
+1. **Update Chat Routes** to track prompt_id in conversations
+2. **Integrate PromptIndicator** component into chat interface
+3. **Add Response Time Tracking** to measure actual AI response times
+4. **Implement Feedback Tags UI** for users to categorize feedback
 
-2. **Environment Variables Required**:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `ANTHROPIC_API_KEY`
+### Short Term (Next 2 Weeks)
+1. **Mobile Optimization** - Ensure admin panel works on mobile
+2. **Export Analytics** - Add CSV/PDF export for analytics data
+3. **Prompt Templates** - Pre-built prompts for common use cases
+4. **A/B Test Results** - Automatic winner declaration
 
-## 🎯 Current State Summary
+### Medium Term (Next Month)
+1. **Spatial Organization** - Drag-and-drop idea arrangement
+2. **Advanced Search UI** - Visual search interface
+3. **Collaboration Features** - Share ideas with team members
+4. **API Documentation** - Public API for integrations
 
-**Everything is configured and working correctly:**
-- ✅ Database tables exist with proper schemas
-- ✅ RLS policies are correctly configured
-- ✅ TypeScript errors are fixed
-- ✅ Chat interface layout is stable
-- ✅ Save/update functionality should work
+## 🛠 Technical Debt
 
-**If save issues occur, check:**
-1. Browser console for JavaScript errors
-2. Network tab for failed API requests
-3. Supabase logs for database errors
+1. **Error Handling**: Need comprehensive error boundaries
+2. **Loading States**: Skeleton screens for better UX
+3. **Test Coverage**: Add unit and integration tests
+4. **Performance**: Optimize vector search queries
+5. **Monitoring**: Add proper error tracking (Sentry configured but not fully utilized)
 
-## 📝 Notes for Future Reference
+## 📈 Metrics & Success Indicators
 
-- Always run `npm run type-check` before pushing to avoid Vercel build failures
-- The `idea_development_history` table is created by `02-conversation-history-tables.sql`
-- Chat jumping was caused by improper flexbox layout (now fixed)
-- All user data is isolated by RLS policies using `auth.uid()`
+### Current Stats:
+- **Conversations Logged**: 56+
+- **Ideas Saved**: 2+ (need to encourage more saves)
+- **Feedback Collected**: Limited (need to promote feedback UI)
+- **A/B Tests**: Infrastructure ready, awaiting test creation
+
+### Target Metrics:
+- 50%+ positive feedback rate
+- 10+ ideas saved per active user
+- 5+ feedback entries per conversation
+- Measurable improvement in prompt performance via A/B tests
+
+## 🔧 Development Workflow
+
+### Before Deploying:
+1. Run `npm run build` locally to check for TypeScript errors
+2. Test new features in development
+3. Commit with descriptive messages
+4. Push to main branch (auto-deploys to Vercel)
+
+### Common Commands:
+```bash
+# Development
+npm run dev
+
+# Type checking
+npx tsc --noEmit
+
+# Build test
+npm run build
+
+# Deploy
+git add -A
+git commit -m "feat: Description"
+git push origin main
+```
+
+## 🎯 Vision Alignment
+
+Poppy is pioneering **transparent, user-controlled AI improvement**. Every feature should:
+1. Make AI adaptation visible to users
+2. Give users control over their AI experience
+3. Improve based on real user needs
+4. Maintain complete privacy and data isolation
+
+---
+
+**For implementation details, see the main README.md and individual component documentation.**
