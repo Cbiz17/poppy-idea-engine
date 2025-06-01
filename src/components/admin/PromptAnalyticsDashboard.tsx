@@ -56,7 +56,13 @@ export default function PromptAnalyticsDashboard() {
   const fetchAnalytics = async () => {
     setIsLoading(true)
     try {
-      // Get active prompt
+      // Fetch analytics from API
+      const response = await fetch(`/api/analytics/prompts?timeRange=${timeRange}`)
+      if (!response.ok) throw new Error('Failed to fetch analytics')
+      
+      const data = await response.json()
+      
+      // Get active prompt details
       const { data: activePrompt } = await supabase
         .from('dynamic_prompts')
         .select('*')
@@ -66,103 +72,30 @@ export default function PromptAnalyticsDashboard() {
 
       if (!activePrompt) return
 
-      // Calculate time filter
-      const now = new Date()
-      let startDate = new Date()
-      
-      switch (timeRange) {
-        case '24h':
-          startDate.setHours(now.getHours() - 24)
-          break
-        case '7d':
-          startDate.setDate(now.getDate() - 7)
-          break
-        case '30d':
-          startDate.setDate(now.getDate() - 30)
-          break
-        default:
-          startDate = new Date('2024-01-01') // All time
-      }
-
-      // Get feedback data for active prompt
-      const { data: feedback } = await supabase
-        .from('message_feedback')
-        .select('*')
-        .gte('created_at', startDate.toISOString())
-        .order('created_at', { ascending: false })
-
-      // Calculate metrics
-      const totalInteractions = feedback?.length || 0
-      const positiveCount = feedback?.filter(f => 
-        f.feedback_type === 'thumbs_up' || 
-        (f.feedback_type === 'rating' && f.feedback_value >= 4)
-      ).length || 0
-      const negativeCount = feedback?.filter(f => 
-        f.feedback_type === 'thumbs_down' || 
-        (f.feedback_type === 'rating' && f.feedback_value <= 2)
-      ).length || 0
-
-      const avgSatisfaction = feedback?.filter(f => f.feedback_type === 'rating' && f.feedback_value)
-        .reduce((sum, f) => sum + f.feedback_value, 0) / 
-        Math.max(feedback?.filter(f => f.feedback_type === 'rating').length || 1, 1)
-
-      // Calculate trend (compare to previous period)
-      const prevStartDate = new Date(startDate)
-      const periodMs = now.getTime() - startDate.getTime()
-      prevStartDate.setTime(prevStartDate.getTime() - periodMs)
-
-      const { data: prevFeedback } = await supabase
-        .from('message_feedback')
-        .select('*')
-        .gte('created_at', prevStartDate.toISOString())
-        .lt('created_at', startDate.toISOString())
-
-      const prevPositiveRate = (prevFeedback?.filter(f => 
-        f.feedback_type === 'thumbs_up' || 
-        (f.feedback_type === 'rating' && f.feedback_value >= 4)
-      ).length || 0) / Math.max(prevFeedback?.length || 1, 1)
-
-      const currentPositiveRate = positiveCount / Math.max(totalInteractions, 1)
-      const trendPercentage = prevPositiveRate > 0 
-        ? ((currentPositiveRate - prevPositiveRate) / prevPositiveRate) * 100
-        : 0
-
+      // Set metrics from API response
+      const metrics = data.metrics
       setActivePromptMetrics({
         promptId: activePrompt.id,
         promptVersion: activePrompt.performance_metrics?.prompt_version || activePrompt.prompt_version,
-        totalInteractions,
-        avgSatisfaction: avgSatisfaction || 0,
-        positiveRate: currentPositiveRate,
-        negativeRate: negativeCount / Math.max(totalInteractions, 1),
-        avgResponseTime: 0.8, // Placeholder - would calculate from actual response times
-        topFeedbackTags: ['helpful', 'creative', 'clear'], // Placeholder - would extract from actual tags
-        trend: trendPercentage > 5 ? 'up' : trendPercentage < -5 ? 'down' : 'stable',
-        trendPercentage: Math.abs(trendPercentage)
+        totalInteractions: metrics.total_interactions || 0,
+        avgSatisfaction: parseFloat(metrics.avg_satisfaction) || 0,
+        positiveRate: metrics.positive_count / Math.max(metrics.total_interactions, 1),
+        negativeRate: metrics.negative_count / Math.max(metrics.total_interactions, 1),
+        avgResponseTime: parseFloat(metrics.avg_response_time) || 0.8,
+        topFeedbackTags: data.topTags?.map((t: any) => t.tag_name) || ['helpful', 'creative', 'clear'],
+        trend: data.trend.direction,
+        trendPercentage: data.trend.percentage
       })
 
-      // Get historical data for chart
-      // This would be more sophisticated in production
-      const historicalMetrics = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date()
-        date.setDate(date.getDate() - (6 - i))
-        return {
-          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          satisfaction: 3.5 + Math.random() * 1.5,
-          interactions: Math.floor(50 + Math.random() * 100)
-        }
-      })
+      // Format daily metrics for chart
+      const historicalMetrics = data.dailyMetrics?.map((d: any) => ({
+        date: new Date(d.metric_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        satisfaction: parseFloat(d.avg_satisfaction) || 0,
+        interactions: d.total_interactions || 0
+      })) || []
       
       setHistoricalData(historicalMetrics)
-
-      // Get comparison data with other prompts
-      const { data: allPrompts } = await supabase
-        .from('dynamic_prompts')
-        .select('*')
-        .eq('prompt_type', 'system_message')
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      setComparisonData(allPrompts)
+      setComparisonData(data.comparison || [])
 
     } catch (error) {
       console.error('Error fetching analytics:', error)
