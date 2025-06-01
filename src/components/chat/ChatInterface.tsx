@@ -238,53 +238,10 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         setInput(customEvent.detail.prompt)
       }
     }
-    
-    const handleContinueConversation = async (e: Event) => {
-      const customEvent = e as CustomEvent
-      if (customEvent.detail?.conversationId) {
-        console.log('🔵 ChatInterface: Received continue conversation event:', customEvent.detail.conversationId)
-        // Load the conversation directly
-        clearMessages()
-        setIsInitializing(true)
-        
-        try {
-          const loaded = await loadConversation(customEvent.detail.conversationId)
-          if (loaded) {
-            setCurrentConversationId(customEvent.detail.conversationId)
-            
-            // Load messages
-            const { data: messages } = await supabase
-              .from('conversation_messages')
-              .select('*')
-              .eq('conversation_id', customEvent.detail.conversationId)
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: true })
-            
-            if (messages && messages.length > 0) {
-              const formattedMessages = messages.map((m: any) => ({
-                id: m.id,
-                content: m.content,
-                role: m.role as 'user' | 'assistant',
-                timestamp: new Date(m.created_at)
-              }))
-              setMessages(formattedMessages)
-            }
-          }
-        } catch (error) {
-          console.error('🔵 ChatInterface: Error loading conversation:', error)
-        } finally {
-          setIsInitializing(false)
-        }
-      }
-    }
 
     window.addEventListener('poppy-welcome-action', handleWelcomeAction)
-    window.addEventListener('poppy-continue-conversation', handleContinueConversation)
-    return () => {
-      window.removeEventListener('poppy-welcome-action', handleWelcomeAction)
-      window.removeEventListener('poppy-continue-conversation', handleContinueConversation)
-    }
-  }, [clearMessages, loadConversation, setCurrentConversationId, setMessages, supabase, user.id])
+    return () => window.removeEventListener('poppy-welcome-action', handleWelcomeAction)
+  }, [])
 
   // Initialize chat
   useEffect(() => {
@@ -306,17 +263,19 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         // BUT only check this if we actually have loaded something (not on first mount)
         if (hasLoadedIdea && ((ideaId && ideaId === currentIdeaContext?.id) || 
             (continueId && continueId === currentConversationId))) {
+          console.log('🔵 ChatInterface: Skipping initialization - already loaded')
           setIsInitializing(false)
           return
         }
         
         if (ideaId && !hasLoadedIdea) {
+          console.log('🔵 ChatInterface: Loading idea:', ideaId)
           clearMessages()
           await loadIdeaIntoChat(ideaId)
         } else if (continueId) {
-        // Load previous conversation
-        console.log('🔵 ChatInterface: Loading conversation with ID:', continueId)
-        clearMessages()
+          // Load previous conversation
+          console.log('🔵 ChatInterface: Loading conversation with ID:', continueId)
+          clearMessages()
         const loaded = await loadConversation(continueId)
         console.log('🔵 ChatInterface: Conversation loaded?', !!loaded, loaded)
         if (!loaded) {
@@ -382,6 +341,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           }
           setHasLoadedIdea(true)
         } else if (!ideaId && !continueId && !hasLoadedIdea) {
+          console.log('🔵 ChatInterface: No idea or continue params, showing welcome')
           const welcomeMessage = await generateWelcomeMessage()
           setMessages([welcomeMessage])
           
