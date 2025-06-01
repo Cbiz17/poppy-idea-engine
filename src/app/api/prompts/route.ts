@@ -254,12 +254,36 @@ Respond with JSON:
       }
     }
 
-    // Parse JSON response
+    // Parse JSON response - handle markdown code blocks
     try {
-      return JSON.parse(fullResponse.trim());
+      // Remove any markdown code block formatting
+      let cleanResponse = fullResponse.trim();
+      
+      // Check if response is wrapped in ```json ... ```
+      const jsonMatch = cleanResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        cleanResponse = jsonMatch[1].trim();
+      }
+      
+      // Try to find JSON object in the response
+      const jsonStart = cleanResponse.indexOf('{');
+      const jsonEnd = cleanResponse.lastIndexOf('}');
+      
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        cleanResponse = cleanResponse.substring(jsonStart, jsonEnd + 1);
+      }
+      
+      return JSON.parse(cleanResponse);
     } catch (parseError) {
       console.error('Failed to parse AI analysis:', fullResponse);
-      return null;
+      console.error('Parse error:', parseError);
+      
+      // Fallback: create a basic improved prompt
+      return {
+        positivePatterns: ['engaging responses', 'clear explanations', 'helpful suggestions'],
+        improvementAreas: ['more specific examples', 'clearer structure'],
+        content: getDefaultPrompt() + '\n\nFocus on providing clear, actionable insights with specific examples.'
+      };
     }
 
   } catch (error) {
