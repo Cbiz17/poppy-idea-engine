@@ -10,9 +10,11 @@ import { User } from '@supabase/supabase-js'
 
 interface LabPageProps {
   user: User
+  prompts: any[]
+  recentFeedback: any[]
 }
 
-export default function LabPageClient({ user }: LabPageProps) {
+export default function LabPageClient({ user, prompts, recentFeedback }: LabPageProps) {
   const [activeTab, setActiveTab] = useState<'prompts' | 'overview' | 'analytics' | 'experiments'>('prompts')
   const supabase = createClient()
 
@@ -170,7 +172,7 @@ export default function LabPageClient({ user }: LabPageProps) {
         
         {/* Tab Content */}
         <div>
-          {activeTab === 'prompts' && <PromptsAdmin />}
+          {activeTab === 'prompts' && <PromptsAdmin user={user} prompts={prompts} recentFeedback={recentFeedback} />}
           {activeTab === 'overview' && <AdminDashboard user={user} />}
           {activeTab === 'analytics' && (
             <div className="text-center py-12 text-gray-500">

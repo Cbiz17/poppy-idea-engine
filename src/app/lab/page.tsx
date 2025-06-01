@@ -13,5 +13,27 @@ export default async function LabPage() {
     redirect('/')
   }
 
-  return <LabPageClient user={user} />
+  // Fetch prompts data
+  const { data: prompts } = await supabase
+    .from('dynamic_prompts')
+    .select('*')
+    .eq('prompt_type', 'system_message')
+    .order('prompt_version', { ascending: false })
+
+  // Fetch recent feedback
+  const { data: recentFeedback } = await supabase
+    .from('message_feedback')
+    .select(`
+      *,
+      conversation_messages(content, role)
+    `)
+    .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  return <LabPageClient 
+    user={user} 
+    prompts={prompts || []} 
+    recentFeedback={recentFeedback || []}
+  />
 }
