@@ -99,6 +99,9 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
       if (result.success) {
         alert('New improved prompt generated!')
         window.location.reload()
+      } else if (result.error) {
+        console.error('Analysis error:', result)
+        alert(`Error: ${result.error}\n${result.details || ''}\n${result.hint || ''}`)
       } else {
         alert(result.message || 'Analysis completed with notes')
       }

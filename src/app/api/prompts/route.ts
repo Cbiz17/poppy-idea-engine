@@ -33,13 +33,20 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { action } = await req.json();
+    const body = await req.json();
+    const { action } = body;
     const supabase = await createServerSupabaseClient();
+    
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     if (action === 'analyze_and_improve') {
       return await analyzeAndImprovePrompts(supabase);
     } else if (action === 'create_variant') {
-      const { promptContent, description } = await req.json();
+      const { promptContent, description } = body;
       return await createPromptVariant(supabase, promptContent, description);
     }
 
@@ -47,7 +54,10 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error('Error in prompts API:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
@@ -77,22 +87,31 @@ async function analyzeAndImprovePrompts(supabase: SupabaseClient) {
       .filter(f => (f.feedback_value >= 4 || f.feedback_type === 'thumbs_up'))
       .map(f => ({
         content: f.conversation_messages.content,
-        rating: f.feedback_value,
-        tags: f.context_tags || []
+        rating: f.feedback_value || (f.feedback_type === 'thumbs_up' ? 5 : 1),
+        tags: f.context_tags || [],
+        feedbackType: f.feedback_type
       }));
 
     const lowRatedResponses = recentFeedback
       .filter(f => (f.feedback_value <= 2 || f.feedback_type === 'thumbs_down'))
       .map(f => ({
         content: f.conversation_messages.content,
-        rating: f.feedback_value,
-        tags: f.context_tags || []
+        rating: f.feedback_value || (f.feedback_type === 'thumbs_down' ? 1 : 5),
+        tags: f.context_tags || [],
+        feedbackType: f.feedback_type
       }));
 
-    if (highRatedResponses.length < 5) {
+    console.log('Feedback analysis:', {
+      total: recentFeedback.length,
+      highRated: highRatedResponses.length,
+      lowRated: lowRatedResponses.length
+    });
+
+    if (highRatedResponses.length < 3) {  // Lowered threshold
       return NextResponse.json({ 
         message: 'Not enough high-rated responses to analyze patterns.',
-        highRatedCount: highRatedResponses.length
+        highRatedCount: highRatedResponses.length,
+        needMore: 3 - highRatedResponses.length
       });
     }
 
@@ -107,12 +126,16 @@ async function analyzeAndImprovePrompts(supabase: SupabaseClient) {
     }
 
     // 4. Store the new prompt
+    const nextVersion = await getNextPromptVersion(supabase);
+    console.log('Storing new prompt with version:', nextVersion);
+    console.log('Improved prompt content:', improvedPrompt);
+    
     const { data: newPrompt, error } = await supabase
       .from('dynamic_prompts')
       .insert({
         prompt_type: 'system_message',
         prompt_content: improvedPrompt.content,
-        prompt_version: await getNextPromptVersion(supabase),
+        prompt_version: nextVersion,
         performance_metrics: {
           based_on_feedback_count: recentFeedback.length,
           high_rated_responses: highRatedResponses.length,
@@ -128,7 +151,17 @@ async function analyzeAndImprovePrompts(supabase: SupabaseClient) {
 
     if (error) {
       console.error('Error storing new prompt:', error);
-      return NextResponse.json({ error: 'Failed to store improved prompt' }, { status: 500 });
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      return NextResponse.json({ 
+        error: 'Failed to store improved prompt',
+        details: error.message,
+        hint: error.hint
+      }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -153,10 +186,14 @@ interface FeedbackResponse {
   content: string;
   rating: number;
   tags: string[];
+  feedbackType?: string;
 }
 
 async function generateImprovedPrompt(highRated: FeedbackResponse[], lowRated: FeedbackResponse[]): Promise<any | null> {
   try {
+    // Handle case where we only have positive feedback
+    const hasLowRated = lowRated.length > 0;
+    
     // Create analysis prompt for Claude
     const analysisPrompt = `Analyze these AI response patterns to create an improved system prompt:
 
@@ -164,16 +201,16 @@ HIGH-RATED RESPONSES (users loved these):
 ${highRated.slice(0, 5).map((r, i) => `${i + 1}. "${r.content.substring(0, 200)}..." 
    Rating: ${r.rating}/5, Tags: ${r.tags.join(', ')}`).join('\n\n')}
 
-LOW-RATED RESPONSES (users disliked these):
+${hasLowRated ? `LOW-RATED RESPONSES (users disliked these):
 ${lowRated.slice(0, 3).map((r, i) => `${i + 1}. "${r.content.substring(0, 200)}..." 
-   Rating: ${r.rating}/5`).join('\n\n')}
+   Rating: ${r.rating}/5`).join('\n\n')}` : 'No low-rated responses yet - focus on amplifying what works!'}
 
 Current system prompt: "${getDefaultPrompt()}"
 
 Based on this feedback analysis:
-1. What patterns make responses highly rated?
-2. What should be avoided based on low ratings?
-3. Create an improved system prompt that incorporates successful patterns.
+1. What patterns make these responses highly rated?
+${hasLowRated ? '2. What should be avoided based on low ratings?' : '2. What elements could be enhanced further?'}
+3. Create an improved system prompt that ${hasLowRated ? 'incorporates successful patterns and avoids unsuccessful ones' : 'amplifies and builds upon these successful patterns'}.
 
 Respond with JSON:
 {
