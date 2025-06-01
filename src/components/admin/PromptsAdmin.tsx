@@ -20,6 +20,7 @@ import {
   Plus
 } from 'lucide-react'
 import Link from 'next/link'
+import PromptAnalyticsDashboard from './PromptAnalyticsDashboard'
 
 interface Prompt {
   id: string
@@ -67,6 +68,7 @@ interface PromptsAdminProps {
 }
 
 export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsAdminProps) {
+  const [activeTab, setActiveTab] = useState<'prompts' | 'analytics'>('prompts')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResults, setAnalysisResults] = useState<any>(null)
   const [currentFeedback, setCurrentFeedback] = useState(recentFeedback)
@@ -371,7 +373,36 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Active A/B Tests Section */}
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200 mb-8">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('prompts')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'prompts'
+                  ? 'border-purple-500 text-purple-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Prompt Management
+            </button>
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'analytics'
+                  ? 'border-purple-500 text-purple-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Analytics & Insights
+            </button>
+          </nav>
+        </div>
+
+        {/* Conditional Content Based on Tab */}
+        {activeTab === 'prompts' ? (
+          <>
+            {/* Active A/B Tests Section */}
         {activeTests.length > 0 && (
           <div className="bg-gradient-to-r from-purple-500 to-blue-600 rounded-xl p-1 mb-8">
             <div className="bg-white rounded-lg p-6">
@@ -647,6 +678,10 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
             </div>
           )}
         </div>
+          </>
+        ) : (
+          <PromptAnalyticsDashboard />
+        )}
       </main>
 
       {/* A/B Test Creation Modal */}
