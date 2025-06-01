@@ -44,17 +44,20 @@ export function WelcomeActions() {
         
       case 'guided-exploration':
         if (data?.prompt) {
-          const textarea = document.querySelector('textarea') as HTMLTextAreaElement
-          if (textarea) {
-            textarea.value = data.prompt
-            const event = new Event('input', { bubbles: true })
-            textarea.dispatchEvent(event)
-            
-            setTimeout(() => {
-              const sendButton = document.querySelector('[data-send-button]') as HTMLButtonElement
-              if (sendButton) sendButton.click()
-            }, 500)
-          }
+          // Dispatch custom event that ChatInterface will listen to
+          window.dispatchEvent(new CustomEvent('poppy-welcome-action', {
+            detail: { prompt: data.prompt }
+          }))
+          
+          // Focus the textarea
+          setTimeout(() => {
+            const textarea = document.querySelector('textarea') as HTMLTextAreaElement
+            if (textarea) {
+              textarea.focus()
+              // Place cursor at end
+              textarea.setSelectionRange(textarea.value.length, textarea.value.length)
+            }
+          }, 100)
         }
         break
         

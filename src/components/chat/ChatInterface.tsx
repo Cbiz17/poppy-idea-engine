@@ -224,6 +224,19 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     }
   }, [messages.length, messageCountSinceDetection, showContinuationBanner, isInitializing, isLoading, detectContinuation, resetMessageCount, messages])
 
+  // Add effect to handle welcome action prompts
+  useEffect(() => {
+    const handleWelcomeAction = (e: Event) => {
+      const customEvent = e as CustomEvent
+      if (customEvent.detail?.prompt) {
+        setInput(customEvent.detail.prompt)
+      }
+    }
+
+    window.addEventListener('poppy-welcome-action', handleWelcomeAction)
+    return () => window.removeEventListener('poppy-welcome-action', handleWelcomeAction)
+  }, [])
+
   // Initialize chat
   useEffect(() => {
     const initializeChat = async () => {
