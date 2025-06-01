@@ -6,7 +6,7 @@ import { User } from '@supabase/supabase-js'
 import { 
   Plus, Grid3X3, List, 
   Search, Filter, Clock, TrendingUp, GitBranch, Star, 
-  Hash, Download, ChevronDown, BarChart3, Archive, Pin, History, Share2, Lock, Users, MessageCircle
+  Hash, Download, ChevronDown, BarChart3, Archive, Pin, History, Share2, Lock, Users, MessageCircle, Globe
 } from 'lucide-react'
 import Link from 'next/link'
 import ConversationAuditTrail from './ConversationAuditTrail'
