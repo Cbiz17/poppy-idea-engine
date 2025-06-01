@@ -595,8 +595,29 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
+    try {
+      // Call the signout API route
+      const response = await fetch('/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        // The server will handle the redirect
+        window.location.href = response.url
+      } else {
+        // Fallback to client-side signout
+        await supabase.auth.signOut()
+        router.push('/')
+      }
+    } catch (error) {
+      console.error('Error signing out:', error)
+      // Fallback to client-side signout
+      await supabase.auth.signOut()
+      router.push('/')
+    }
   }
 
   if (isInitializing) {

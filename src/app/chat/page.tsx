@@ -18,7 +18,7 @@ export default function ChatPage() {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
-        router.push('/auth/signin')
+        router.push('/')
       } else {
         setUser(user)
       }
@@ -30,7 +30,7 @@ export default function ChatPage() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session?.user) {
-        router.push('/auth/signin')
+        router.push('/')
       } else {
         setUser(session.user)
       }
