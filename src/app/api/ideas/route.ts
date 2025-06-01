@@ -115,9 +115,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
+    // Get ideas with branch count
     const { data: ideas, error } = await supabase
       .from('ideas')
-      .select('*')
+      .select(`
+        *,
+        branches:ideas!branched_from_id(id, title)
+      `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
       
@@ -126,7 +130,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Failed to fetch ideas' }, { status: 500 });
     }
     
-    return NextResponse.json({ ideas });
+    // Process ideas to include branch count
+    const processedIdeas = ideas?.map(idea => ({
+      ...idea,
+      branches: idea.branches || []
+    })) || [];
+    
+    return NextResponse.json({ ideas: processedIdeas });
     
   } catch (error) {
     console.error('Error:', error);

@@ -5,11 +5,12 @@ import { createClient } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { 
   ArrowLeft, MessageCircle, Sparkles, Edit2, 
-  History, Trash2, GitBranch, Clock, Pin, Archive
+  History, Trash2, GitBranch, Clock, Pin, Archive,
+  Layers
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import ConversationAuditTrail from './ConversationAuditTrail'
+import IdeaTreeView from './IdeaTreeView'
 import EditIdeaModal from './EditIdeaModal'
 
 interface IdeaDetailViewProps {
@@ -32,7 +33,7 @@ const CATEGORIES = ['General', 'Business', 'Creative', 'Technology', 'Personal G
 
 export default function IdeaDetailView({ user, idea: initialIdea }: IdeaDetailViewProps) {
   const [idea, setIdea] = useState(initialIdea)
-  const [showHistory, setShowHistory] = useState(false)
+  const [showTreeView, setShowTreeView] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const supabase = createClient()
@@ -279,10 +280,11 @@ export default function IdeaDetailView({ user, idea: initialIdea }: IdeaDetailVi
                   Recent Developments
                 </h3>
                 <button
-                  onClick={() => setShowHistory(true)}
-                  className="text-sm text-purple-600 hover:text-purple-700"
+                  onClick={() => setShowTreeView(true)}
+                  className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
                 >
-                  View Full History
+                  <Layers className="w-4 h-4" />
+                  View Idea Tree
                 </button>
               </div>
               
@@ -309,11 +311,11 @@ export default function IdeaDetailView({ user, idea: initialIdea }: IdeaDetailVi
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowHistory(true)}
+                  onClick={() => setShowTreeView(true)}
                   className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
                 >
-                  <History className="w-4 h-4" />
-                  Full History
+                  <Layers className="w-4 h-4" />
+                  Idea Tree
                 </button>
               </div>
               
@@ -364,14 +366,12 @@ export default function IdeaDetailView({ user, idea: initialIdea }: IdeaDetailVi
         </div>
       )}
 
-      {/* History Modal */}
-      {showHistory && (
-        <ConversationAuditTrail
-          ideaId={idea.id}
-          isOpen={showHistory}
-          onClose={() => setShowHistory(false)}
-        />
-      )}
+      {/* Idea Tree View Modal */}
+      <IdeaTreeView
+        ideaId={idea.id}
+        isOpen={showTreeView}
+        onClose={() => setShowTreeView(false)}
+      />
     </div>
   )
 }
