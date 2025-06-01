@@ -26,7 +26,7 @@ export default async function LabPage() {
           </p>
         </div>
         
-        <AdminDashboard />
+        <AdminDashboard user={user} />
       </div>
     </div>
   )
