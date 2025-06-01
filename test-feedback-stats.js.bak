@@ -1,0 +1,122 @@
+// Test script to verify feedback statistics calculation
+
+// Sample feedback data that might come from the database
+const sampleFeedback = [
+  // Thumbs up feedback
+  { id: 1, feedback_type: 'thumbs_up', feedback_value: 1 },
+  { id: 2, feedback_type: 'thumbs_up', feedback_value: 1 },
+  { id: 3, feedback_type: 'thumbs_up', feedback_value: 1 },
+  { id: 4, feedback_type: 'thumbs_up', feedback_value: 1 },
+  { id: 5, feedback_type: 'thumbs_up', feedback_value: 1 },
+  
+  // Thumbs down feedback
+  { id: 6, feedback_type: 'thumbs_down', feedback_value: -1 },
+  { id: 7, feedback_type: 'thumbs_down', feedback_value: -1 },
+  { id: 8, feedback_type: 'thumbs_down', feedback_value: -1 },
+  { id: 9, feedback_type: 'thumbs_down', feedback_value: -1 },
+  { id: 10, feedback_type: 'thumbs_down', feedback_value: -1 },
+  { id: 11, feedback_type: 'thumbs_down', feedback_value: -1 },
+  
+  // Rating feedback
+  { id: 12, feedback_type: 'rating', feedback_value: 5 },
+  { id: 13, feedback_type: 'rating', feedback_value: 4 },
+  { id: 14, feedback_type: 'rating', feedback_value: 3 },
+  { id: 15, feedback_type: 'rating', feedback_value: 2 },
+  { id: 16, feedback_type: 'rating', feedback_value: 1 },
+];
+
+// OLD LOGIC (the problematic one)
+function calculateOldStats(recentFeedback) {
+  return {
+    total: recentFeedback.length,
+    positive: recentFeedback.filter(f => f.feedback_type === 'thumbs_up' || (f.feedback_value !== null && f.feedback_value >= 4)).length,
+    negative: recentFeedback.filter(f => f.feedback_type === 'thumbs_down' || (f.feedback_value !== null && f.feedback_value <= 2)).length,
+    avgRating: recentFeedback.length > 0 
+      ? recentFeedback
+          .filter(f => f.feedback_value !== null && f.feedback_value !== undefined)
+          .reduce((sum, f) => sum + (f.feedback_value || 0), 0) / 
+        Math.max(recentFeedback.filter(f => f.feedback_value !== null && f.feedback_value !== undefined).length, 1)
+      : 0
+  };
+}
+
+// NEW LOGIC (the fixed one)
+function calculateNewStats(recentFeedback) {
+  return {
+    total: recentFeedback.length,
+    positive: recentFeedback.filter(f => {
+      // Thumbs up OR rating >= 4 (but not negative thumbs which have value = -1)
+      if (f.feedback_type === 'thumbs_up') return true;
+      if (f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value >= 4) return true;
+      return false;
+    }).length,
+    negative: recentFeedback.filter(f => {
+      // Thumbs down OR rating <= 2 (but only for actual ratings, not thumbs)
+      if (f.feedback_type === 'thumbs_down') return true;
+      if (f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value <= 2) return true;
+      return false;
+    }).length,
+    avgRating: recentFeedback.length > 0 
+      ? recentFeedback
+          .filter(f => f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value > 0)
+          .reduce((sum, f) => sum + (f.feedback_value || 0), 0) / 
+        Math.max(recentFeedback.filter(f => f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value > 0).length, 1)
+      : 0
+  };
+}
+
+console.log('Testing with sample feedback data:');
+console.log('Total items:', sampleFeedback.length);
+console.log('Breakdown:');
+console.log('- Thumbs up:', sampleFeedback.filter(f => f.feedback_type === 'thumbs_up').length);
+console.log('- Thumbs down:', sampleFeedback.filter(f => f.feedback_type === 'thumbs_down').length);
+console.log('- Ratings:', sampleFeedback.filter(f => f.feedback_type === 'rating').length);
+
+console.log('\n--- OLD LOGIC RESULTS ---');
+const oldStats = calculateOldStats(sampleFeedback);
+console.log('Positive:', oldStats.positive, '(should be 7: 5 thumbs_up + 2 ratings >= 4)');
+console.log('Negative:', oldStats.negative, '(should be 8: 6 thumbs_down + 2 ratings <= 2)');
+console.log('Average Rating:', oldStats.avgRating.toFixed(2));
+
+console.log('\n--- NEW LOGIC RESULTS ---');
+const newStats = calculateNewStats(sampleFeedback);
+console.log('Positive:', newStats.positive, '(should be 7: 5 thumbs_up + 2 ratings >= 4)');
+console.log('Negative:', newStats.negative, '(should be 8: 6 thumbs_down + 2 ratings <= 2)');
+console.log('Average Rating:', newStats.avgRating.toFixed(2), '(should be 3.0 from ratings only)');
+
+// Test edge case: just thumbs
+const justThumbs = [
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_up', feedback_value: 1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+  { feedback_type: 'thumbs_down', feedback_value: -1 },
+];
+
+console.log('\n--- EDGE CASE: 11 thumbs up, 11 thumbs down ---');
+console.log('OLD LOGIC:');
+const oldThumbsStats = calculateOldStats(justThumbs);
+console.log('Positive:', oldThumbsStats.positive, '(OLD ISSUE: counts some thumbs_down as negative because -1 <= 2)');
+console.log('Negative:', oldThumbsStats.negative);
+
+console.log('\nNEW LOGIC:');
+const newThumbsStats = calculateNewStats(justThumbs);
+console.log('Positive:', newThumbsStats.positive, '(should be 11)');
+console.log('Negative:', newThumbsStats.negative, '(should be 11)');

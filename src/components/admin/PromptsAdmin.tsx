@@ -13,7 +13,9 @@ import {
   MessageSquare,
   ThumbsUp,
   ThumbsDown,
-  RefreshCw
+  RefreshCw,
+  FlaskConical,
+  Info
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -50,6 +52,8 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
   const [currentFeedback, setCurrentFeedback] = useState(recentFeedback)
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [showABTestModal, setShowABTestModal] = useState(false)
+  const [selectedPromptForTest, setSelectedPromptForTest] = useState<Prompt | null>(null)
   
   // Create Supabase client
   const supabase = createBrowserClient(
@@ -94,6 +98,11 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     window.location.href = '/'
+  }
+
+  const handleActivateClick = (prompt: Prompt) => {
+    setSelectedPromptForTest(prompt)
+    setShowABTestModal(true)
   }
 
   const activatePrompt = async (promptId: string) => {
@@ -389,7 +398,7 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
                       </span>
                       {!prompt.is_active && (
                         <button
-                          onClick={() => activatePrompt(prompt.id)}
+                          onClick={() => handleActivateClick(prompt)}
                           className="flex items-center gap-1 px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
                         >
                           <Play className="w-3 h-3" />
@@ -421,6 +430,78 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
           )}
         </div>
       </main>
+
+      {/* A/B Test Creation Modal */}
+      {showABTestModal && selectedPromptForTest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              Activate Prompt Version {selectedPromptForTest.prompt_version}
+            </h3>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="text-sm text-blue-900">
+                  <p className="font-medium mb-1">What is A/B Testing?</p>
+                  <p>A/B testing allows you to compare two prompts by randomly showing different versions to users. This helps determine which prompt performs better based on real user feedback.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <p className="text-gray-700 font-medium">How would you like to activate this prompt?</p>
+              <div className="space-y-3">
+                <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input 
+                    type="radio" 
+                    name="activation-method" 
+                    value="immediate"
+                    className="mt-1"
+                  />
+                  <div>
+                    <p className="font-medium text-gray-900">Replace immediately</p>
+                    <p className="text-sm text-gray-600">All users will start using this prompt right away</p>
+                  </div>
+                </label>
+                
+                <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input 
+                    type="radio" 
+                    name="activation-method" 
+                    value="test"
+                    defaultChecked
+                    className="mt-1"
+                  />
+                  <div>
+                    <p className="font-medium text-gray-900">Run A/B test first (Coming Soon)</p>
+                    <p className="text-sm text-gray-600">Compare performance before fully switching</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowABTestModal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              
+              <button
+                onClick={() => {
+                  activatePrompt(selectedPromptForTest.id)
+                  setShowABTestModal(false)
+                }}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Activate Immediately
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
