@@ -88,7 +88,7 @@ async function analyzeAndImprovePrompts(supabase: SupabaseClient) {
       .map(f => ({
         content: f.conversation_messages.content,
         rating: f.feedback_value || (f.feedback_type === 'thumbs_up' ? 5 : 1),
-        tags: f.context_tags || [],
+        tags: [],
         feedbackType: f.feedback_type
       }));
 
@@ -97,7 +97,7 @@ async function analyzeAndImprovePrompts(supabase: SupabaseClient) {
       .map(f => ({
         content: f.conversation_messages.content,
         rating: f.feedback_value || (f.feedback_type === 'thumbs_down' ? 1 : 5),
-        tags: f.context_tags || [],
+        tags: [],
         feedbackType: f.feedback_type
       }));
 
@@ -107,15 +107,25 @@ async function analyzeAndImprovePrompts(supabase: SupabaseClient) {
       lowRated: lowRatedResponses.length
     });
 
-    if (highRatedResponses.length < 3) {  // Lowered threshold
+    if (highRatedResponses.length < 3 && lowRatedResponses.length === 0) {  // Bootstrap mode
       return NextResponse.json({ 
-        message: 'Not enough high-rated responses to analyze patterns.',
+        message: 'Not enough varied feedback yet. Need at least 3 high-rated responses AND some low-rated feedback for meaningful analysis.',
         highRatedCount: highRatedResponses.length,
-        needMore: 3 - highRatedResponses.length
+        lowRatedCount: lowRatedResponses.length,
+        suggestion: 'The system needs both positive and negative feedback to learn. Try different types of conversations and provide honest feedback - both thumbs up AND thumbs down when appropriate.',
+        currentStats: {
+          total: recentFeedback.length,
+          onlyPositive: lowRatedResponses.length === 0
+        }
       });
     }
 
     // 3. Generate improved prompt using AI analysis
+    console.log('Generating improved prompt with:', {
+      highRated: highRatedResponses.length,
+      lowRated: lowRatedResponses.length
+    });
+    
     const improvedPrompt = await generateImprovedPrompt(
       highRatedResponses, 
       lowRatedResponses

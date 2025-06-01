@@ -30,8 +30,7 @@ interface Prompt {
 interface Feedback {
   id: string
   feedback_type: string
-  feedback_value: number
-  context_tags: string[]
+  feedback_value: number | null
   created_at: string
   conversation_messages: {
     content: string
@@ -113,17 +112,21 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
     }
   }
 
+  console.log('Recent feedback data:', recentFeedback.slice(0, 3)); // Debug first 3 entries
+  
   const feedbackStats = {
     total: recentFeedback.length,
-    positive: recentFeedback.filter(f => f.feedback_value >= 4 || f.feedback_type === 'thumbs_up').length,
-    negative: recentFeedback.filter(f => f.feedback_value <= 2 || f.feedback_type === 'thumbs_down').length,
+    positive: recentFeedback.filter(f => (f.feedback_value && f.feedback_value >= 4) || f.feedback_type === 'thumbs_up').length,
+    negative: recentFeedback.filter(f => (f.feedback_value && f.feedback_value <= 2) || f.feedback_type === 'thumbs_down').length,
     avgRating: recentFeedback.length > 0 
       ? recentFeedback
           .filter(f => f.feedback_value)
           .reduce((sum, f) => sum + f.feedback_value, 0) / 
-        recentFeedback.filter(f => f.feedback_value).length
+        recentFeedback.filter(f => f.feedback_value).length || 0
       : 0
   }
+  
+  console.log('Calculated feedback stats:', feedbackStats); // Debug stats
 
   const activePrompt = prompts.find(p => p.is_active)
 
