@@ -20,10 +20,18 @@ export function WelcomeActions() {
         if (data?.conversationId) {
           devLogger.info('WelcomeActions', 'Continuing last conversation', { conversationId: data.conversationId })
           
-          // Just navigate to continue the conversation
-          // The ChatInterface will handle loading the conversation and checking for ideas
-          console.log('🔍 WelcomeActions: Navigating to:', `/chat?continue=${data.conversationId}`)
-          window.location.href = `/chat?continue=${data.conversationId}`
+          // Instead of navigating, dispatch an event like guided exploration does
+          window.dispatchEvent(new CustomEvent('poppy-continue-conversation', {
+            detail: { conversationId: data.conversationId }
+          }))
+          
+          // Clear the welcome message by focusing the input
+          setTimeout(() => {
+            const textarea = document.querySelector('textarea') as HTMLTextAreaElement
+            if (textarea) {
+              textarea.focus()
+            }
+          }, 100)
         }
         break
         

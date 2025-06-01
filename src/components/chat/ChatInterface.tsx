@@ -238,10 +238,53 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         setInput(customEvent.detail.prompt)
       }
     }
+    
+    const handleContinueConversation = async (e: Event) => {
+      const customEvent = e as CustomEvent
+      if (customEvent.detail?.conversationId) {
+        console.log('🔵 ChatInterface: Received continue conversation event:', customEvent.detail.conversationId)
+        // Load the conversation directly
+        clearMessages()
+        setIsInitializing(true)
+        
+        try {
+          const loaded = await loadConversation(customEvent.detail.conversationId)
+          if (loaded) {
+            setCurrentConversationId(customEvent.detail.conversationId)
+            
+            // Load messages
+            const { data: messages } = await supabase
+              .from('conversation_messages')
+              .select('*')
+              .eq('conversation_id', customEvent.detail.conversationId)
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: true })
+            
+            if (messages && messages.length > 0) {
+              const formattedMessages = messages.map((m: any) => ({
+                id: m.id,
+                content: m.content,
+                role: m.role as 'user' | 'assistant',
+                timestamp: new Date(m.created_at)
+              }))
+              setMessages(formattedMessages)
+            }
+          }
+        } catch (error) {
+          console.error('🔵 ChatInterface: Error loading conversation:', error)
+        } finally {
+          setIsInitializing(false)
+        }
+      }
+    }
 
     window.addEventListener('poppy-welcome-action', handleWelcomeAction)
-    return () => window.removeEventListener('poppy-welcome-action', handleWelcomeAction)
-  }, [])
+    window.addEventListener('poppy-continue-conversation', handleContinueConversation)
+    return () => {
+      window.removeEventListener('poppy-welcome-action', handleWelcomeAction)
+      window.removeEventListener('poppy-continue-conversation', handleContinueConversation)
+    }
+  }, [clearMessages, loadConversation, setCurrentConversationId, setMessages, supabase, user.id])
 
   // Initialize chat
   useEffect(() => {
