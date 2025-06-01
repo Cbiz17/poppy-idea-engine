@@ -244,11 +244,30 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
       setIsInitializing(true)
       try {
         const ideaId = searchParams.get('idea')
+        const continueId = searchParams.get('continue')
         
         if (ideaId && !hasLoadedIdea) {
           clearMessages()
           await loadIdeaIntoChat(ideaId)
-        } else if (!ideaId && !hasLoadedIdea) {
+        } else if (continueId && !hasLoadedIdea) {
+          // Load previous conversation
+          clearMessages()
+          const loaded = await loadConversation(continueId)
+          if (loaded) {
+            setCurrentConversationId(continueId)
+            // Check if this conversation has an associated idea
+            const { data: conv } = await supabase
+              .from('conversations')
+              .select('idea_id, ideas!left(id, title, content, category)')
+              .eq('id', continueId)
+              .single()
+            
+            if (conv?.idea_id && conv.ideas) {
+              setCurrentIdeaContext(conv.ideas)
+            }
+            setHasLoadedIdea(true)
+          }
+        } else if (!ideaId && !continueId && !hasLoadedIdea) {
           const welcomeMessage = await generateWelcomeMessage()
           setMessages([welcomeMessage])
           
@@ -271,7 +290,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     }
 
     initializeChat()
-  }, [searchParams.get('idea')])
+  }, [searchParams.get('idea'), searchParams.get('continue')])
 
   const loadIdeaIntoChat = async (ideaId: string) => {
     try {
