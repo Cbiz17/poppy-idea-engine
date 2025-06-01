@@ -20,25 +20,10 @@ export function WelcomeActions() {
         if (data?.conversationId) {
           devLogger.info('WelcomeActions', 'Continuing last conversation', { conversationId: data.conversationId })
           
-          if (welcomeData?.lastConversationIdeaId) {
-            window.location.href = `/chat?idea=${welcomeData.lastConversationIdeaId}`
-          } else {
-            // Check if this conversation was about an idea
-            const { data: conversation } = await supabase
-              .from('conversations')
-              .select('idea_id')
-              .eq('id', data.conversationId)
-              .single()
-              
-            if (conversation?.idea_id) {
-              console.log('🔍 WelcomeActions: Found idea_id, navigating to:', `/chat?idea=${conversation.idea_id}`)
-              window.location.href = `/chat?idea=${conversation.idea_id}`
-            } else {
-              // Load the conversation without an idea
-              console.log('🔍 WelcomeActions: No idea_id, navigating to:', `/chat?continue=${data.conversationId}`)
-              window.location.href = `/chat?continue=${data.conversationId}`
-            }
-          }
+          // Just navigate to continue the conversation
+          // The ChatInterface will handle loading the conversation and checking for ideas
+          console.log('🔍 WelcomeActions: Navigating to:', `/chat?continue=${data.conversationId}`)
+          window.location.href = `/chat?continue=${data.conversationId}`
         }
         break
         
