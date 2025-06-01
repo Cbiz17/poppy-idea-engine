@@ -56,7 +56,7 @@ export default function PromptsPage() {
           .from('message_feedback')
           .select(`
             *,
-            conversation_messages!inner(content, role)
+            conversation_messages(content, role)
           `)
           .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
           .order('created_at', { ascending: false })
