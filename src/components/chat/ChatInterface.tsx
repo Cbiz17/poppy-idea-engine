@@ -258,7 +258,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
             // Check if this conversation has an associated idea
             const { data: conv } = await supabase
               .from('conversations')
-              .select('idea_id, ideas!left(id, title, content, category)')
+              .select('idea_id, ideas!left(*)')
               .eq('id', continueId)
               .single()
             
