@@ -59,6 +59,11 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isNearBottom, setIsNearBottom] = useState(true)
   const [hasNewMessages, setHasNewMessages] = useState(false)
+  
+  // Debug: Log URL params immediately
+  console.log('🔴 ChatInterface: Rendering with URL:', window.location.href)
+  console.log('🔴 ChatInterface: searchParams.get("continue"):', searchParams.get('continue'))
+  console.log('🔴 ChatInterface: searchParams.get("idea"):', searchParams.get('idea'))
 
   // State
   const [input, setInput] = useState('')
@@ -243,14 +248,21 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     const initializeChat = async () => {
       setIsInitializing(true)
       console.log('🔵 ChatInterface: Starting initialization...')
+      
+      // Get params directly from URL on mount
+      const urlParams = new URLSearchParams(window.location.search)
+      const ideaId = urlParams.get('idea')
+      const continueId = urlParams.get('continue')
+      
+      console.log('🔵 ChatInterface: URL params from window.location - idea:', ideaId, 'continue:', continueId)
+      console.log('🔵 ChatInterface: URL params from searchParams - idea:', searchParams.get('idea'), 'continue:', searchParams.get('continue'))
+      
       try {
-        const ideaId = searchParams.get('idea')
-        const continueId = searchParams.get('continue')
-        console.log('🔵 ChatInterface: URL params - idea:', ideaId, 'continue:', continueId)
         
         // Don't re-initialize if we already loaded this conversation/idea
-        if ((ideaId && ideaId === currentIdeaContext?.id) || 
-            (continueId && continueId === currentConversationId)) {
+        // BUT only check this if we actually have loaded something (not on first mount)
+        if (hasLoadedIdea && ((ideaId && ideaId === currentIdeaContext?.id) || 
+            (continueId && continueId === currentConversationId))) {
           setIsInitializing(false)
           return
         }
@@ -349,7 +361,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     }
 
     initializeChat()
-  }, [searchParams.get('idea'), searchParams.get('continue')])
+  }, [searchParams.get('idea'), searchParams.get('continue')]) // Back to original - this was correct
 
   const loadIdeaIntoChat = async (ideaId: string) => {
     try {
