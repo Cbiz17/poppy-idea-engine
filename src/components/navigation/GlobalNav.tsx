@@ -44,7 +44,7 @@ export default function GlobalNav({ user }: GlobalNavProps) {
 
   const navItems = [
     { href: '/chat', label: 'Chat', icon: MessageCircle },
-    { href: '/ideas', label: 'Ideas', icon: Grid3X3 },
+    { href: '/ideas', label: 'Ideas Gallery', icon: Grid3X3 },
     { href: '/discover', label: 'Discover', icon: Globe },
   ]
 
