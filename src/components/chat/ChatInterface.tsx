@@ -247,12 +247,6 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         const ideaId = searchParams.get('idea')
         const continueId = searchParams.get('continue')
         
-        // Don't re-initialize if already loaded
-        if (hasLoadedIdea && ideaId === currentIdeaContext?.id) {
-          setIsInitializing(false)
-          return
-        }
-        
         if (ideaId) {
           clearMessages()
           await loadIdeaIntoChat(ideaId)
@@ -319,7 +313,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     }
 
     initializeChat()
-  }, [searchParams.get('idea'), searchParams.get('continue')]) // Back to original - this was correct
+  }, [searchParams])
 
   const loadIdeaIntoChat = async (ideaId: string) => {
     try {
