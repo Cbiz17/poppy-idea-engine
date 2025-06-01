@@ -174,14 +174,27 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     // Check if this is a new message (not initial load)
     const isNewMessage = messages.length > 0 && !isInitializing
     
-    if (isNearBottom) {
-      // User is near bottom, auto-scroll
-      setTimeout(() => scrollToBottom('smooth'), 100)
+    if (isNearBottom || isLoading) {
+      // User is near bottom or AI is responding, auto-scroll
+      // Longer delay for AI responses to ensure content is rendered
+      const delay = isLoading ? 200 : 100
+      setTimeout(() => scrollToBottom('smooth'), delay)
     } else if (isNewMessage) {
       // User is reading above, show indicator
       setHasNewMessages(true)
     }
-  }, [messages.length, isReviewModalOpen, isEnhancedModalOpen, isNearBottom, isInitializing, scrollToBottom])
+  }, [messages, isLoading, isReviewModalOpen, isEnhancedModalOpen, isNearBottom, isInitializing, scrollToBottom])
+
+  // Force scroll when AI is loading (typing)
+  useEffect(() => {
+    if (isLoading && !isReviewModalOpen && !isEnhancedModalOpen) {
+      // Small delay to ensure loading indicator is rendered
+      const timer = setTimeout(() => {
+        scrollToBottom('smooth')
+      }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading, isReviewModalOpen, isEnhancedModalOpen, scrollToBottom])
 
   // Monitor for valuable content
   useEffect(() => {
@@ -609,7 +622,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         
         {/* Main chat area with proper scroll container */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 pb-4">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 pb-4 scroll-smooth">
             <div className="space-y-6">
               {messages.map((message) => (
                 <ChatMessage
@@ -640,7 +653,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
               )}
               
               {/* Spacer div to ensure scroll to bottom works properly */}
-              <div ref={messagesEndRef} className="h-4" />
+              <div ref={messagesEndRef} className="h-20" />
             </div>
           </div>
 

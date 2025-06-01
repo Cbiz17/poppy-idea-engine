@@ -158,6 +158,10 @@ input:-webkit-autofill:active {
   overflow-y: auto;
   padding-bottom: 20px; /* Add some padding at the bottom */
   scroll-behavior: smooth;
+  /* Improve scroll performance */
+  -webkit-overflow-scrolling: touch;
+  /* Ensure content is visible during scroll */
+  will-change: scroll-position;
 }
 
 /* Ensure the input area stays at the bottom and is always visible */
