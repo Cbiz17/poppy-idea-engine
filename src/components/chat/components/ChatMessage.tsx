@@ -1,7 +1,7 @@
 import React from 'react'
 import { Message } from '@/hooks/useChat'
 import { Idea } from '@/hooks/useIdeas'
-import FeedbackComponent from '@/components/feedback/EnhancedFeedbackComponent'
+import EnhancedFeedbackComponent from '@/components/feedback/EnhancedFeedbackComponent'
 import { Plus, RefreshCw, GitBranch } from 'lucide-react'
 import { detectValueableContent } from '@/utils/messageHelpers'
 import { WelcomeActions } from './WelcomeActions'
@@ -34,7 +34,7 @@ export function ChatMessage({
   const isUser = message.role === 'user'
   const isWelcomeMessage = message.id === '1'
   const hasValueableContent = detectValueableContent(message.content)
-  const hasRealUUID = message.id.includes('-')
+  const hasRealUUID = message.id.includes('-') && message.id.length > 30
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -55,7 +55,7 @@ export function ChatMessage({
         {/* Feedback component for assistant messages */}
         {!isUser && !isWelcomeMessage && hasRealUUID && (
           <>
-            <FeedbackComponent messageId={message.id} />
+            <EnhancedFeedbackComponent messageId={message.id} />
             
             {/* Enhanced save options for idea development */}
             {hasValueableContent && currentIdeaContext && (
