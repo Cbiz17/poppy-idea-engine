@@ -88,7 +88,7 @@ export default function GlobalNav({ user }: GlobalNavProps) {
             {/* Lab Button - Always Visible */}
             <Link
               href="/lab"
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all relative ${
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                 pathname === '/lab'
                   ? 'text-white bg-purple-700'
                   : 'text-white bg-purple-600 hover:bg-purple-700 shadow-md hover:shadow-lg'
@@ -96,9 +96,6 @@ export default function GlobalNav({ user }: GlobalNavProps) {
             >
               <span className="animate-pulse">⚡</span>
               <span>Lab</span>
-              {pathname !== '/lab' && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping"></span>
-              )}
             </Link>
           </nav>
 
@@ -197,7 +194,7 @@ export default function GlobalNav({ user }: GlobalNavProps) {
               {/* Lab Button in Mobile */}
               <Link
                 href="/lab"
-                className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
+                className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   pathname === '/lab'
                     ? 'bg-purple-700 text-white'
                     : 'bg-purple-600 text-white hover:bg-purple-700'
@@ -205,9 +202,6 @@ export default function GlobalNav({ user }: GlobalNavProps) {
               >
                 <span className="animate-pulse">⚡</span>
                 Lab
-                {pathname !== '/lab' && (
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-yellow-400 rounded-full animate-ping"></span>
-                )}
               </Link>
             </nav>
 
