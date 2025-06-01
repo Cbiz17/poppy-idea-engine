@@ -1,101 +1,28 @@
 -- Add branching support to ideas table
--- Run this in Supabase SQL editor
-
--- Add columns for branching relationships
-ALTER TABLE ideas 
-ADD COLUMN IF NOT EXISTS branched_from_id UUID REFERENCES ideas(id),
+ALTER TABLE public.ideas 
+ADD COLUMN IF NOT EXISTS branched_from_id UUID REFERENCES public.ideas(id) ON DELETE SET NULL,
 ADD COLUMN IF NOT EXISTS branch_note TEXT,
-ADD COLUMN IF NOT EXISTS is_branch BOOLEAN DEFAULT false;
+ADD COLUMN IF NOT EXISTS is_branch BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS development_count INTEGER DEFAULT 0;
 
--- Add index for efficient branch queries
-CREATE INDEX IF NOT EXISTS idx_ideas_branched_from ON ideas(branched_from_id);
+-- Add index for finding branches
+CREATE INDEX IF NOT EXISTS idx_ideas_branched_from ON public.ideas(branched_from_id) WHERE branched_from_id IS NOT NULL;
 
--- Function to get idea family tree
-CREATE OR REPLACE FUNCTION get_idea_family(p_idea_id UUID)
-RETURNS TABLE (
-  id UUID,
-  title TEXT,
-  development_count INTEGER,
-  branched_from_id UUID,
-  branch_note TEXT,
-  created_at TIMESTAMPTZ,
-  relationship TEXT
-) AS $$
-BEGIN
-  RETURN QUERY
-  WITH RECURSIVE idea_tree AS (
-    -- Base case: the idea itself
-    SELECT 
-      i.id,
-      i.title,
-      i.development_count,
-      i.branched_from_id,
-      i.branch_note,
-      i.created_at,
-      'self'::TEXT as relationship
-    FROM ideas i
-    WHERE i.id = p_idea_id
-    
-    UNION ALL
-    
-    -- Recursive case: find all branches
-    SELECT 
-      i.id,
-      i.title,
-      i.development_count,
-      i.branched_from_id,
-      i.branch_note,
-      i.created_at,
-      'branch'::TEXT as relationship
-    FROM ideas i
-    INNER JOIN idea_tree it ON i.branched_from_id = it.id
-  )
-  SELECT * FROM idea_tree
-  ORDER BY created_at DESC;
-END;
-$$ LANGUAGE plpgsql;
+-- Add visibility columns for sharing (while we're updating the schema)
+ALTER TABLE public.ideas
+ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS share_token UUID DEFAULT gen_random_uuid();
 
--- Function to create a branched idea
-CREATE OR REPLACE FUNCTION create_branched_idea(
-  p_original_id UUID,
-  p_title TEXT,
-  p_content TEXT,
-  p_category TEXT,
-  p_branch_note TEXT,
-  p_user_id UUID
-)
-RETURNS UUID AS $$
-DECLARE
-  v_new_id UUID;
-BEGIN
-  INSERT INTO ideas (
-    user_id,
-    title,
-    content,
-    category,
-    branched_from_id,
-    branch_note,
-    is_branch,
-    development_count
-  ) VALUES (
-    p_user_id,
-    p_title,
-    p_content,
-    p_category,
-    p_original_id,
-    p_branch_note,
-    true,
-    1
-  ) RETURNING id INTO v_new_id;
-  
-  RETURN v_new_id;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Update RLS policies to handle branches properly
+-- Users can view ideas they own OR ideas that are public
+DROP POLICY IF EXISTS "Users can view own ideas" ON public.ideas;
+CREATE POLICY "Users can view own or public ideas" ON public.ideas
+  FOR SELECT USING (auth.uid() = user_id OR is_public = true);
 
--- Update idea_development_history to track branch events
-ALTER TABLE idea_development_history
-ADD COLUMN IF NOT EXISTS is_branch_point BOOLEAN DEFAULT false;
-
--- Grant necessary permissions
-GRANT EXECUTE ON FUNCTION get_idea_family(UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION create_branched_idea(UUID, TEXT, TEXT, TEXT, TEXT, UUID) TO authenticated;
+-- Add comment for clarity
+COMMENT ON COLUMN public.ideas.branched_from_id IS 'References the parent idea if this idea was branched';
+COMMENT ON COLUMN public.ideas.branch_note IS 'Note explaining why this idea was branched';
+COMMENT ON COLUMN public.ideas.is_branch IS 'True if this idea was created as a branch from another';
+COMMENT ON COLUMN public.ideas.development_count IS 'Number of times this idea has been updated/developed';
+COMMENT ON COLUMN public.ideas.is_public IS 'Whether this idea is publicly visible';
+COMMENT ON COLUMN public.ideas.share_token IS 'Unique token for sharing private ideas';

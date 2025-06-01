@@ -54,21 +54,25 @@ export async function POST(req: Request) {
       // Continue without embedding
     }
     
+    const ideaData: any = {
+      user_id: user.id,
+      title,
+      content,
+      category,
+      embedding,
+      development_count: isBranch ? 1 : 0
+    }
+    
+    // Add branching fields if provided
+    if (branchedFromId) {
+      ideaData.branched_from_id = branchedFromId
+      ideaData.branch_note = branchNote
+      ideaData.is_branch = true
+    }
+    
     const { data: newIdea, error: createError } = await supabase
       .from('ideas')
-      .insert({
-        user_id: user.id,
-        title,
-        content,
-        category,
-        embedding,
-        development_count: isBranch ? 1 : 0,
-        ...(branchedFromId && {
-          branched_from_id: branchedFromId,
-          branch_note: branchNote,
-          is_branch: true
-        })
-      })
+      .insert(ideaData)
       .select()
       .single();
       

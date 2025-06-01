@@ -525,13 +525,17 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           body: JSON.stringify({
             ...editedIdea,
             conversationId: currentConversationId,
-            branchedFromId: fullMetadata.parentIdeaId,
-            branchNote: fullMetadata.branchNote,
+            branchedFromId: currentIdeaContext?.id || fullMetadata.parentIdeaId,
+            branchNote: (suggestedIdeaForReview as any)?.branchNote || fullMetadata.branchNote,
             isBranch: true
           })
         })
         
-        if (!response.ok) throw new Error('Failed to create branched idea')
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('Branch save failed:', errorData)
+          throw new Error('Failed to create branched idea')
+        }
         const { idea } = await response.json()
         savedIdea = idea
         
