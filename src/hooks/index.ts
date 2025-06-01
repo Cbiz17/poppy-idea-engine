@@ -20,3 +20,6 @@ export type { UserContext, UserPreferences } from './usePersonalContext'
 
 export { useFeedbackAnalysis } from './useFeedbackAnalysis'
 export type { FeedbackInsights, ConversationQuality } from './useFeedbackAnalysis'
+
+export { useFeedbackStats } from './useFeedbackStats'
+export type { UserFeedbackStats, Achievement, Milestone } from './useFeedbackStats'

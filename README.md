@@ -1,5 +1,7 @@
 # Poppy Idea Engine
 
+> 📋 **For current deployment status and technical details, see [docs/PROJECT_STATUS.md](./docs/PROJECT_STATUS.md)**
+
 **A personal AI thinking partner that learns and improves from every conversation.**
 
 Poppy transforms fleeting thoughts into organized, actionable ideas through natural conversation. Unlike traditional AI chatbots, Poppy adapts to your unique communication style, remembers what matters to you, and continuously improves based on your feedback.

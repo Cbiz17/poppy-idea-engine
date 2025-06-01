@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { devLogger } from '@/lib/dev-logger';
 
 export async function POST(req: Request) {
   try {
@@ -151,10 +152,33 @@ export async function POST(req: Request) {
 
     console.log('Feedback stored successfully:', feedback.id);
 
+    // Get updated gamification data
+    const { data: gamificationData, error: gamificationError } = await supabase
+      .rpc('get_user_feedback_gamification_data', { p_user_id: user.id });
+
+    if (gamificationError) {
+      console.error('Error fetching gamification data:', gamificationError);
+    }
+
+    // Check if any new achievements were unlocked
+    let newAchievements: any[] = [];
+    if (gamificationData?.achievements) {
+      // Get achievements that were unlocked in the last minute
+      const oneMinuteAgo = new Date(Date.now() - 60000);
+      newAchievements = gamificationData.achievements.filter((a: any) => 
+        new Date(a.unlockedAt) > oneMinuteAgo
+      );
+    }
+
     // Trigger learning analysis asynchronously
     analyzeFeedbackPattern(supabase, user.id, feedbackType, feedbackValue);
 
-    return NextResponse.json({ success: true, feedback });
+    return NextResponse.json({ 
+      success: true, 
+      feedback,
+      gamification: gamificationData,
+      newAchievements
+    });
 
   } catch (error) {
     console.error('Feedback API error:', error);
@@ -293,5 +317,40 @@ Respond with JSON in this format:
     }
   } catch (error) {
     console.error('Error extracting learning pattern:', error);
+  }
+}
+
+// GET endpoint to fetch user's gamification stats
+export async function GET(request: Request) {
+  try {
+    const supabase = await createServerSupabaseClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: gamificationData, error } = await supabase
+      .rpc('get_user_feedback_gamification_data', { p_user_id: user.id });
+
+    if (error) {
+      devLogger.error('feedback-api', 'Error fetching gamification data', { error });
+      return NextResponse.json({ 
+        error: 'Failed to fetch stats',
+        details: error.message 
+      }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: gamificationData
+    });
+
+  } catch (error) {
+    devLogger.error('feedback-api', 'Unexpected error in GET', { error });
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Message } from '@/hooks/useChat'
 import { Idea } from '@/hooks/useIdeas'
-import FeedbackComponent from '@/components/feedback/FeedbackComponent'
+import FeedbackComponent from '@/components/feedback/EnhancedFeedbackComponent'
 import { Plus, RefreshCw, GitBranch } from 'lucide-react'
 import { detectValueableContent } from '@/utils/messageHelpers'
 import { WelcomeActions } from './WelcomeActions'
