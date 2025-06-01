@@ -263,7 +263,8 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
               .single()
             
             if (conv?.idea_id && conv.ideas) {
-              setCurrentIdeaContext(conv.ideas)
+              // conv.ideas is an array from left join, get the first (and only) item
+              setCurrentIdeaContext(Array.isArray(conv.ideas) ? conv.ideas[0] : conv.ideas)
             }
             setHasLoadedIdea(true)
           }
