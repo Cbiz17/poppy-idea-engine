@@ -29,8 +29,8 @@ export function WelcomeActions() {
             if (conversation?.idea_id) {
               window.location.href = `/chat?idea=${conversation.idea_id}`
             } else {
-              // Load the conversation context
-              window.location.reload()
+              // Load the conversation without an idea
+              window.location.href = `/chat?continue=${data.conversationId}`
             }
           }
         }
