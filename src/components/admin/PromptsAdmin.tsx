@@ -114,16 +114,36 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
 
   console.log('Recent feedback data:', recentFeedback.slice(0, 3)); // Debug first 3 entries
   console.log('Feedback with null messages:', recentFeedback.filter(f => !f.conversation_messages).length);
+  console.log('Feedback types breakdown:', {
+    thumbs_up: recentFeedback.filter(f => f.feedback_type === 'thumbs_up').length,
+    thumbs_down: recentFeedback.filter(f => f.feedback_type === 'thumbs_down').length,
+    rating: recentFeedback.filter(f => f.feedback_type === 'rating').length,
+    other: recentFeedback.filter(f => !['thumbs_up', 'thumbs_down', 'rating'].includes(f.feedback_type)).length
+  });
+  console.log('Feedback values for thumbs:', {
+    thumbs_up_values: recentFeedback.filter(f => f.feedback_type === 'thumbs_up').map(f => f.feedback_value),
+    thumbs_down_values: recentFeedback.filter(f => f.feedback_type === 'thumbs_down').map(f => f.feedback_value)
+  });
   
   const feedbackStats = {
     total: recentFeedback.length,
-    positive: recentFeedback.filter(f => f.feedback_type === 'thumbs_up' || (f.feedback_value !== null && f.feedback_value >= 4)).length,
-    negative: recentFeedback.filter(f => f.feedback_type === 'thumbs_down' || (f.feedback_value !== null && f.feedback_value <= 2)).length,
+    positive: recentFeedback.filter(f => {
+      // Thumbs up OR rating >= 4 (but not negative thumbs which have value = -1)
+      if (f.feedback_type === 'thumbs_up') return true;
+      if (f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value >= 4) return true;
+      return false;
+    }).length,
+    negative: recentFeedback.filter(f => {
+      // Thumbs down OR rating <= 2 (but only for actual ratings, not thumbs)
+      if (f.feedback_type === 'thumbs_down') return true;
+      if (f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value <= 2) return true;
+      return false;
+    }).length,
     avgRating: recentFeedback.length > 0 
       ? recentFeedback
-          .filter(f => f.feedback_value !== null && f.feedback_value !== undefined)
+          .filter(f => f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value > 0)
           .reduce((sum, f) => sum + (f.feedback_value || 0), 0) / 
-        Math.max(recentFeedback.filter(f => f.feedback_value !== null && f.feedback_value !== undefined).length, 1)
+        Math.max(recentFeedback.filter(f => f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value > 0).length, 1)
       : 0
   }
   
