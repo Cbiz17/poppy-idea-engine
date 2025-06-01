@@ -51,9 +51,16 @@ src/
 │   │   └── embed/          # Vector embedding generation
 │   ├── auth/               # Authentication flows
 │   ├── chat/               # Chat interface
-│   ├── ideas/              # Idea gallery and management
-│   └── dashboard/          # User dashboard
+│   ├── ideas/              # Ideas Gallery
+│   ├── discover/           # Public idea discovery
+│   ├── admin/              # Admin dashboard
+│   ├── profile/            # User profile management
+│   └── dashboard/          # Redirects to chat
 ├── components/
+│   ├── navigation/         # Global navigation components
+│   │   └── GlobalNav.tsx   # Main navigation bar
+│   ├── layout/             # Layout wrapper components
+│   │   └── AuthLayout.tsx  # Authenticated pages wrapper
 │   ├── admin/              # Admin dashboard components
 │   ├── chat/               # Chat interface (ChatInterface.tsx)
 │   ├── ideas/              # Idea management (IdeasGallery.tsx)
@@ -179,6 +186,8 @@ archived-chats/            # Saved conversation history
 
 ### Key Components to Understand
 
+- **GlobalNav.tsx**: Main navigation bar with responsive design and user menu
+- **AuthLayout.tsx**: Authentication wrapper that includes global navigation
 - **ChatInterface.tsx**: Main conversation component with feedback collection
 - **IdeasGallery.tsx**: Displays saved ideas with search and organization
 - **DevPanel.tsx**: Development debugging tools (floating 🐛 button)
@@ -411,6 +420,46 @@ The patterns learned here about effective human-AI interaction directly inform t
 - **AI Improvement**: Dynamic prompts performing better than baseline
 - **Engagement**: Users returning to continue conversations and save ideas
 - **Learning**: Successful patterns identified and applied to new interactions
+
+## 🆕 Recent Updates (June 2025)
+
+### Global Navigation System
+A consistent navigation bar has been implemented across all authenticated pages:
+
+#### 1. **Navigation Components**
+- `GlobalNav.tsx` - Main navigation component with responsive design
+- `AuthLayout.tsx` - Authentication wrapper that includes global navigation
+- Consistent navigation across Chat, Ideas Gallery, Discover, Lab, Admin, and Profile pages
+
+#### 2. **Navigation Features**
+- **Fixed Header**: Sticky navigation that remains at the top while scrolling
+- **Active Page Highlighting**: Visual indicator for current page
+- **Responsive Design**: Mobile-friendly with hamburger menu
+- **User Profile Dropdown**: Quick access to profile, admin, and sign out
+- **Prominent Lab Button**: Purple background with animated lightning bolt (⚡) for easy discovery
+
+#### 3. **Navigation Structure**
+```
+[Poppy Logo] → [Chat] [Ideas Gallery] [Discover] [Lab ⚡] → [User Profile ▼]
+```
+
+#### 4. **Implementation Details**
+- All authenticated pages now use `AuthLayout` wrapper
+- Removed duplicate navigation from `IdeasGallery.tsx`
+- Centralized authentication checking in `AuthLayout`
+- Consistent loading states across all pages
+
+#### 5. **File Changes**
+- Created: `src/components/navigation/GlobalNav.tsx`
+- Created: `src/components/layout/AuthLayout.tsx`
+- Updated: All page components to use `AuthLayout`
+- Simplified: Ideas page query to fix data loading issues
+
+### Lab Button Design
+- **Always Visible**: Accessible from any page in the application
+- **Eye-catching**: Purple background with hover effects
+- **Animated Icon**: Pulsing lightning bolt (⚡) for visual interest
+- **Mobile Support**: Included in mobile navigation menu
 
 ## 🆕 Recent Enhancements (May 2025)
 
