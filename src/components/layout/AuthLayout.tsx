@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session?.user && pathname !== '/') {
         router.push('/')
-      } else {
+      } else if (session?.user) {
         setUser(session.user)
       }
     })
