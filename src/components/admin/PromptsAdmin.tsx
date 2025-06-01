@@ -113,11 +113,12 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
   }
 
   console.log('Recent feedback data:', recentFeedback.slice(0, 3)); // Debug first 3 entries
+  console.log('Feedback with null messages:', recentFeedback.filter(f => !f.conversation_messages).length);
   
   const feedbackStats = {
     total: recentFeedback.length,
-    positive: recentFeedback.filter(f => (f.feedback_value && f.feedback_value >= 4) || f.feedback_type === 'thumbs_up').length,
-    negative: recentFeedback.filter(f => (f.feedback_value && f.feedback_value <= 2) || f.feedback_type === 'thumbs_down').length,
+    positive: recentFeedback.filter(f => f.feedback_type === 'thumbs_up' || (f.feedback_value !== null && f.feedback_value >= 4)).length,
+    negative: recentFeedback.filter(f => f.feedback_type === 'thumbs_down' || (f.feedback_value !== null && f.feedback_value <= 2)).length,
     avgRating: recentFeedback.length > 0 
       ? recentFeedback
           .filter(f => f.feedback_value !== null && f.feedback_value !== undefined)
