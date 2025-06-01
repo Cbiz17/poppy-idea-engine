@@ -1,24 +1,27 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
-import ChatInterface from '@/components/chat/ChatInterface'
-import { ErrorBoundary } from '@/components/common/ErrorBoundary'
-import { useRouter } from 'next/navigation'
-import AuthLayout from '@/components/layout/AuthLayout'
+import { createClient } from '@/lib/supabase'
+import { useRouter, usePathname } from 'next/navigation'
+import GlobalNav from '@/components/navigation/GlobalNav'
 
-export default function ChatPage() {
+interface AuthLayoutProps {
+  children: React.ReactNode
+}
+
+export default function AuthLayout({ children }: AuthLayoutProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       
-      if (!user) {
+      if (!user && pathname !== '/') {
         router.push('/')
       } else {
         setUser(user)
@@ -30,7 +33,7 @@ export default function ChatPage() {
     checkUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session?.user) {
+      if (!session?.user && pathname !== '/') {
         router.push('/')
       } else {
         setUser(session.user)
@@ -38,28 +41,23 @@ export default function ChatPage() {
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase, router])
+  }, [supabase, router, pathname])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full animate-pulse mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your conversation space...</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     )
   }
 
-  if (!user) {
-    return null
-  }
-
   return (
-    <AuthLayout>
-      <ErrorBoundary>
-        <ChatInterface user={user} />
-      </ErrorBoundary>
-    </AuthLayout>
+    <>
+      <GlobalNav user={user} />
+      {children}
+    </>
   )
 }

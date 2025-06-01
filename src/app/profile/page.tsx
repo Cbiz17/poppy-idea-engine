@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import ProfileClient from './ProfileClient'
+import AuthLayout from '@/components/layout/AuthLayout'
 
 export default async function ProfilePage() {
   const supabase = await createServerSupabaseClient()
@@ -31,12 +32,16 @@ export default async function ProfilePage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
-  return <ProfileClient 
-    user={user} 
-    profile={profile} 
-    stats={{ 
-      ideas: ideaCount || 0, 
-      conversations: conversationCount || 0 
-    }} 
-  />
+  return (
+    <AuthLayout>
+      <ProfileClient 
+        user={user} 
+        profile={profile} 
+        stats={{ 
+          ideas: ideaCount || 0, 
+          conversations: conversationCount || 0 
+        }} 
+      />
+    </AuthLayout>
+  )
 }

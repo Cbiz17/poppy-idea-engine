@@ -4,9 +4,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { 
-  Sparkles, LogOut, MessageCircle, Plus, Grid3X3, List, 
+  Plus, Grid3X3, List, 
   Search, Filter, Clock, TrendingUp, GitBranch, Star, 
-  Hash, Download, ChevronDown, BarChart3, Archive, Pin, History, Globe, Share2, Lock, Users
+  Hash, Download, ChevronDown, BarChart3, Archive, Pin, History, Share2, Lock, Users
 } from 'lucide-react'
 import Link from 'next/link'
 import ConversationAuditTrail from './ConversationAuditTrail'
@@ -84,10 +84,7 @@ export default function IdeasGallery({ user, ideas: initialIdeas }: IdeasGallery
     }
   }
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
-  }
+
 
   const handleEditIdea = (idea: Idea) => {
     setSelectedIdea(idea)
@@ -409,67 +406,6 @@ export default function IdeasGallery({ user, ideas: initialIdeas }: IdeasGallery
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/chat" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Poppy Idea Engine</h1>
-              <p className="text-sm text-gray-600">Idea Gallery</p>
-            </div>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            <Link
-              href="/lab"
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors relative"
-            >
-              <span className="animate-pulse">⚡</span>
-              <span>Lab</span>
-            </Link>
-            
-            <Link
-              href="/discover"
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              <Globe className="w-4 h-4" />
-              Discover
-            </Link>
-            
-            <Link
-              href="/chat"
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              <MessageCircle className="w-4 h-4" />
-              New Conversation
-            </Link>
-            
-            <div className="flex items-center gap-2">
-              {user.user_metadata?.avatar_url && (
-                <img 
-                  src={user.user_metadata.avatar_url} 
-                  alt="Profile" 
-                  className="w-8 h-8 rounded-full"
-                />
-              )}
-              <span className="text-sm text-gray-600">
-                {user.user_metadata?.full_name || user.email}
-              </span>
-            </div>
-            
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">

@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import DiscoverClient from './DiscoverClient'
+import AuthLayout from '@/components/layout/AuthLayout'
 
 export default async function DiscoverPage() {
   const supabase = await createServerSupabaseClient()
@@ -42,5 +43,9 @@ export default async function DiscoverPage() {
     isLikedByCurrentUser: idea.idea_likes?.some((like: any) => like.user_id === user.id) || false
   })) || []
 
-  return <DiscoverClient user={user} ideas={ideasWithLikeStatus} />
+  return (
+    <AuthLayout>
+      <DiscoverClient user={user} ideas={ideasWithLikeStatus} />
+    </AuthLayout>
+  )
 }

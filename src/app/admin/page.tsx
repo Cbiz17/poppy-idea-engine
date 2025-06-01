@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import AdminDashboard from '@/components/admin/AdminDashboard'
+import AuthLayout from '@/components/layout/AuthLayout'
 
 export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null)
@@ -49,5 +50,9 @@ export default function AdminPage() {
     return null
   }
 
-  return <AdminDashboard user={user} />
+  return (
+    <AuthLayout>
+      <AdminDashboard user={user} />
+    </AuthLayout>
+  )
 }

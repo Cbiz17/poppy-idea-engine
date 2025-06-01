@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import LabPageClient from './LabPageClient'
+import AuthLayout from '@/components/layout/AuthLayout'
 
 export default async function LabPage() {
   const supabase = await createServerSupabaseClient()
@@ -31,9 +32,13 @@ export default async function LabPage() {
     .order('created_at', { ascending: false })
     .limit(50)
 
-  return <LabPageClient 
-    user={user} 
-    prompts={prompts || []} 
-    recentFeedback={recentFeedback || []}
-  />
+  return (
+    <AuthLayout>
+      <LabPageClient 
+        user={user} 
+        prompts={prompts || []} 
+        recentFeedback={recentFeedback || []}
+      />
+    </AuthLayout>
+  )
 }
