@@ -16,4 +16,9 @@ export async function POST(request: NextRequest) {
   return NextResponse.redirect(new URL('/', request.url), {
     status: 302,
   })
+}
+
+export async function GET(request: NextRequest) {
+  // Also handle GET requests for sign out
+  return POST(request)
 } 

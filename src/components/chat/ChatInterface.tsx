@@ -36,6 +36,7 @@ import {
 import IdeaReviewModal from '@/components/ideas/IdeaReviewModal'
 import EnhancedSaveModal from '@/components/ideas/EnhancedSaveModal'
 import FeedbackTooltip from '@/components/feedback/FeedbackTooltip'
+import { UserFeedbackStats } from '@/components/feedback/UserFeedbackStats'
 
 // Utils
 import {
@@ -642,6 +643,8 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         onQuickSave={() => handleQuickSave()}
         onSignOut={handleSignOut}
       />
+      
+      <UserFeedbackStats user={user} />
 
       {showContinuationBanner && continuationContext && (
         <ContinuationBanner

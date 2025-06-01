@@ -1,0 +1,24 @@
+# Sign Out Fix Deployment Commands
+# Run these commands in your terminal to deploy the fix
+
+# 1. Navigate to project directory
+cd /Users/christianbutler/Projects/poppy-idea-engine
+
+# 2. Check current git status
+git status
+
+# 3. Stage the changed files
+git add src/app/chat/page.tsx src/components/chat/ChatInterface.tsx
+
+# 4. Commit with descriptive message
+git commit -m "Fix sign out functionality - redirect to home page instead of non-existent /auth/signin
+
+- Updated chat/page.tsx to redirect to '/' instead of '/auth/signin'
+- Enhanced ChatInterface handleSignOut to use server-side signout route
+- Added proper error handling and fallback for signout
+- Fixes 404 error when signing out"
+
+# 5. Push to remote repository
+git push origin main
+
+# The changes should automatically deploy on Vercel!
