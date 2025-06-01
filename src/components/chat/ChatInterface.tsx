@@ -244,8 +244,10 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
       setIsInitializing(true)
       
       try {
-        const ideaId = searchParams.get('idea')
-        const continueId = searchParams.get('continue')
+        // Get params directly from window.location
+        const urlParams = new URLSearchParams(window.location.search)
+        const ideaId = urlParams.get('idea')
+        const continueId = urlParams.get('continue')
         
         if (ideaId) {
           clearMessages()
@@ -313,7 +315,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     }
 
     initializeChat()
-  }, [searchParams])
+  }, [window.location.search]) // Watch the actual URL search params
 
   const loadIdeaIntoChat = async (ideaId: string) => {
     try {
