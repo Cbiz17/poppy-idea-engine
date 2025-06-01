@@ -34,7 +34,7 @@ Transform thoughts into tangible, organizable concepts through conversation with
 - ✅ **Browser DevTools MCP Server** operational with Puppeteer integration
 - ✅ **Sentry integration** configured for error monitoring
 - ✅ **Enhanced logging system** created and ready for integration
-- ⚠️ **Admin dashboard** exists but no feedback collected yet
+- ⚠️ **Poppy Lab** exists with full functionality for monitoring AI improvement
 - 🔄 **Spatial organization** and advanced search planned for future
 
 ## Project Structure
@@ -42,7 +42,7 @@ Transform thoughts into tangible, organizable concepts through conversation with
 ```
 src/
 ├── app/
-│   ├── admin/              # AI management dashboard  
+│   ├── lab/                # Poppy Lab - AI improvement monitoring & management  
 │   ├── api/                # Backend endpoints
 │   │   ├── chat/           # Main AI conversation
 │   │   ├── chat-enhanced/  # Enhanced chat with learning
@@ -208,7 +208,7 @@ archived-chats/            # Saved conversation history
 ## Working with the AI System
 
 ### Dynamic Prompts
-The system uses `get_dynamic_system_prompt()` to select the best-performing AI prompts based on user feedback. Always prefer dynamic prompts over hardcoded ones. Monitor prompt performance through the admin dashboard.
+The system uses `get_dynamic_system_prompt()` to select the best-performing AI prompts based on user feedback. Always prefer dynamic prompts over hardcoded ones. Monitor prompt performance through the Poppy Lab.
 
 ### Feedback Collection
 Every AI response should have feedback collection UI (thumbs up/down, ratings). This data drives the self-improvement system and is monitored for effectiveness.
@@ -389,11 +389,13 @@ interface ContinuationDetectionResult { continuationDetected: boolean, confidenc
 - **Session Replay**: Debug with complete user interaction history
 - **Release Tracking**: Monitor deployments and rollbacks
 
-### Admin Dashboard
+### Poppy Lab
 - **PromptsAdmin.tsx**: Monitor AI performance and manage dynamic prompts
+- **Tabbed Interface**: Prompt Management (default), Overview, Analytics, Experiments
 - Real-time feedback analytics and success metrics
 - A/B testing interface for prompt optimization
 - System health monitoring integration
+- Access via prominent Lab button in navigation
 
 ## Vision & Impact
 

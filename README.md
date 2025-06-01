@@ -98,7 +98,7 @@ Poppy's learning happens transparently:
 3. **Prompt Evolution**: AI instructions improve automatically
 4. **Performance Tracking**: Measure satisfaction over time
 
-You can see exactly how Poppy is learning in the admin dashboard.
+You can see exactly how Poppy is learning in the Poppy Lab.
 
 ## 🔒 Privacy & Security
 
