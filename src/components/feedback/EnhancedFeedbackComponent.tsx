@@ -34,10 +34,10 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
   // Enhanced visual feedback messages
   const encouragementMessages = [
     "🎯 Your feedback is training Poppy's neural network!",
-    "⚡ AI improvement detected! Thanks to users like you.",
+    "⚡ Poppy improvement detected! Thanks to users like you.",
     "🧠 Your input = smarter conversations for everyone!",
     "🚀 Poppy learned something new from your feedback!",
-    "💡 You're helping shape the future of AI!"
+    "💡 You're helping shape the future of Poppy!"
   ]
 
   // Stop pulsing after 5 seconds
@@ -155,7 +155,8 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
 
   if (feedbackGiven) {
     return (
-      <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 relative overflow-hidden">
+      <div className="mt-4 pt-4 border-t-2 border-gray-100 min-h-[180px]">
+        <div className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 relative overflow-hidden">
         {/* Animated background pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-40 h-40 bg-purple-400 rounded-full filter blur-3xl animate-pulse"></div>
@@ -195,13 +196,14 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
               <span>{userStats?.pointsToNextLevel || 100} XP to next level</span>
             </div>
           </div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="mt-4 pt-4 border-t-2 border-gray-100">
+    <div className="mt-4 pt-4 border-t-2 border-gray-100 min-h-[180px] transition-all duration-300">
       {!showDetailedFeedback ? (
         <div className="space-y-3">
           {/* Progress indicator */}
@@ -209,7 +211,7 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-purple-600" />
-                <span className="text-xs font-medium text-purple-700">AI Learning Progress</span>
+                <span className="text-xs font-medium text-purple-700">Poppy Learning Progress</span>
               </div>
               <span className="text-xs text-purple-600">78% improved this week</span>
             </div>

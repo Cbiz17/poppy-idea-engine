@@ -55,6 +55,9 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [isNearBottom, setIsNearBottom] = useState(true)
+  const [hasNewMessages, setHasNewMessages] = useState(false)
 
   // State
   const [input, setInput] = useState('')
@@ -133,15 +136,52 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     getImprovementSuggestions
   } = useFeedbackAnalysis({ user, conversationId: currentConversationId })
 
-  // Scroll to bottom when messages change
+  // Smart scroll behavior
+  const checkIfNearBottom = useCallback(() => {
+    if (!scrollContainerRef.current) return true
+    
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+    return distanceFromBottom < 100 // Within 100px of bottom
+  }, [])
+
+  const scrollToBottom = useCallback((behavior: 'smooth' | 'auto' = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' })
+  }, [])
+
+  // Monitor scroll position
   useEffect(() => {
-    // Only scroll if we're not showing modals
-    if (!isReviewModalOpen && !isEnhancedModalOpen) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-      }, 100)
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      const nearBottom = checkIfNearBottom()
+      setIsNearBottom(nearBottom)
+      if (nearBottom && hasNewMessages) {
+        setHasNewMessages(false)
+      }
     }
-  }, [messages, isReviewModalOpen, isEnhancedModalOpen])
+
+    container.addEventListener('scroll', handleScroll)
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [checkIfNearBottom, hasNewMessages])
+
+  // Scroll to bottom when messages change - but only if user is near bottom
+  useEffect(() => {
+    // Don't scroll if modals are open
+    if (isReviewModalOpen || isEnhancedModalOpen) return
+    
+    // Check if this is a new message (not initial load)
+    const isNewMessage = messages.length > 0 && !isInitializing
+    
+    if (isNearBottom) {
+      // User is near bottom, auto-scroll
+      setTimeout(() => scrollToBottom('smooth'), 100)
+    } else if (isNewMessage) {
+      // User is reading above, show indicator
+      setHasNewMessages(true)
+    }
+  }, [messages.length, isReviewModalOpen, isEnhancedModalOpen, isNearBottom, isInitializing, scrollToBottom])
 
   // Monitor for valuable content
   useEffect(() => {
@@ -567,7 +607,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           />
         )}
         
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth relative">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
@@ -597,6 +637,22 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           )}
           
           <div ref={messagesEndRef} />
+          
+          {/* New messages indicator */}
+          {hasNewMessages && !isNearBottom && (
+            <button
+              onClick={() => {
+                scrollToBottom('smooth')
+                setHasNewMessages(false)
+              }}
+              className="fixed bottom-24 right-8 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-purple-700 transition-all flex items-center gap-2 animate-bounce"
+            >
+              <span>New message</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <ChatInput
