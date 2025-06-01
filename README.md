@@ -125,6 +125,19 @@ We're building the future of personalized AI assistance. The patterns learned he
 - 🔄 Collecting feedback for improvement
 - 🔄 Building preference UI
 
+## ⚠️ CRITICAL: Implementation Guidelines
+
+### Keep It Simple
+This project values **simplicity over complexity**. Features like "Continue where you left off" are intentionally simple - they pre-fill the chat input rather than loading complex state. This is by design.
+
+### Before Making Changes
+1. **Understand existing patterns** - Many "improvements" make things worse
+2. **Discuss complex changes** - Talk before implementing
+3. **Respect working code** - If it works well, don't "fix" it
+4. **User experience first** - Simple solutions often provide better UX
+
+**See [IMPORTANT_DOCUMENTATION_UPDATE.md](./IMPORTANT_DOCUMENTATION_UPDATE.md) for critical implementation details.**
+
 ---
 
 **Start your journey with Poppy today. The more you use it, the better it understands you.**

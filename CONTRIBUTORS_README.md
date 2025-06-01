@@ -1,5 +1,34 @@
 # Contributor Tracking Implementation
 
+## ⚠️ IMPORTANT: Development Philosophy
+
+### Before Contributing to Poppy
+
+**PLEASE READ [IMPORTANT_DOCUMENTATION_UPDATE.md](./IMPORTANT_DOCUMENTATION_UPDATE.md) FIRST!**
+
+Poppy values **simplicity over complexity**. We've learned from experience that over-engineering features leads to:
+- 🕰️ Hours of debugging
+- 😟 Poor user experience
+- 🔧 Maintenance nightmares
+- 💔 Frustrated developers
+
+### Key Principles
+1. **KISS (Keep It Simple, Stupid)** - The simplest solution that works is usually the best
+2. **User Control** - Users should understand and control what happens
+3. **Consistency** - Similar features should work in similar ways
+4. **Discussion First** - Complex changes need discussion before implementation
+
+### Example: "Continue Where You Left Off"
+This feature simply pre-fills the chat input with a continuation prompt. It doesn't:
+- Navigate to special URLs
+- Load conversation history
+- Manage complex state
+- Auto-send messages
+
+Why? Because the simple solution works perfectly and gives users control.
+
+---
+
 ## Overview
 This implementation adds contributor tracking to the Poppy Idea Engine, allowing ideas to show who contributed to them through creation, editing, or merging.
 
