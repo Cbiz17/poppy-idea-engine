@@ -42,6 +42,24 @@ interface Feedback {
   }
 }
 
+interface ABTest {
+  id: string
+  test_name: string
+  test_description: string
+  test_type: string
+  variants: any
+  success_metric: string
+  target_sample_size: number
+  current_sample_size: number
+  is_active: boolean
+  test_status: string
+  created_at: string
+  test_config?: {
+    traffic_split: { control: number; variant: number }
+    test_duration_days: number
+  }
+}
+
 interface PromptsAdminProps {
   user: User
   prompts: Prompt[]
@@ -59,6 +77,16 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null)
   const [editedContent, setEditedContent] = useState('')
+  const [testConfig, setTestConfig] = useState({
+    testName: '',
+    testDescription: '',
+    trafficSplit: { control: 50, variant: 50 },
+    duration: 14,
+    successMetric: 'satisfaction_score',
+    minimumSampleSize: 100
+  })
+  const [selectedActivationMethod, setSelectedActivationMethod] = useState<'immediate' | 'test'>('test')
+  const [activeTests, setActiveTests] = useState<ABTest[]>([])
   
   // Create Supabase client
   const supabase = createBrowserClient(
@@ -91,10 +119,35 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
     }
   }
 
+  // Fetch active A/B tests
+  const fetchActiveTests = async () => {
+    try {
+      const { data: tests } = await supabase
+        .from('ab_tests')
+        .select('*')
+        .eq('test_type', 'prompt_variation')
+        .eq('is_active', true)
+        .eq('test_status', 'running')
+        .order('created_at', { ascending: false })
+
+      if (tests) {
+        setActiveTests(tests)
+      }
+    } catch (error) {
+      console.error('Error fetching active tests:', error)
+    }
+  }
+
+  // Initial load
+  useEffect(() => {
+    fetchActiveTests()
+  }, [])
+
   // Set up auto-refresh every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       refreshFeedbackData()
+      fetchActiveTests()
     }, 30000) // 30 seconds
 
     return () => clearInterval(interval)
@@ -134,6 +187,48 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
     } catch (error) {
       console.error('Error saving prompt:', error)
       alert('Failed to save prompt')
+    }
+  }
+
+  const createABTest = async () => {
+    if (!selectedPromptForTest) return
+
+    try {
+      const activePrompt = prompts.find(p => p.is_active)
+      
+      if (!activePrompt) {
+        alert('No active prompt found to test against')
+        return
+      }
+
+      const response = await fetch('/api/ab-tests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create-test',
+          controlPromptId: activePrompt.id,
+          variantPromptId: selectedPromptForTest.id,
+          testName: testConfig.testName || `Test: v${activePrompt.prompt_version} vs v${selectedPromptForTest.prompt_version}`,
+          testDescription: testConfig.testDescription || 'Testing prompt performance improvement',
+          trafficSplit: testConfig.trafficSplit,
+          duration: testConfig.duration,
+          successMetric: testConfig.successMetric,
+          minimumSampleSize: testConfig.minimumSampleSize
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        alert('A/B test created successfully! Users will now be randomly assigned to different prompt versions.')
+        setShowABTestModal(false)
+        window.location.reload()
+      } else {
+        alert('Error creating A/B test: ' + (result.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Error creating A/B test:', error)
+      alert('Failed to create A/B test')
     }
   }
 
@@ -276,6 +371,69 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Active A/B Tests Section */}
+        {activeTests.length > 0 && (
+          <div className="bg-gradient-to-r from-purple-500 to-blue-600 rounded-xl p-1 mb-8">
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <FlaskConical className="w-6 h-6 text-purple-600" />
+                <h2 className="text-xl font-bold text-gray-900">Active A/B Tests</h2>
+                <span className="ml-auto text-sm text-gray-600">
+                  {activeTests.length} test{activeTests.length > 1 ? 's' : ''} running
+                </span>
+              </div>
+              <div className="space-y-3">
+                {activeTests.map(test => {
+                  const progressPercent = Math.min(100, (test.current_sample_size / test.target_sample_size) * 100)
+                  return (
+                    <div key={test.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{test.test_name}</h3>
+                          <p className="text-sm text-gray-600 mt-1">{test.test_description}</p>
+                        </div>
+                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                          {test.test_config?.test_duration_days || 14} days
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+                        <div>
+                          <span className="text-gray-500">Participants:</span>
+                          <span className="ml-2 font-medium">{test.current_sample_size}/{test.target_sample_size}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Success Metric:</span>
+                          <span className="ml-2 font-medium">{test.success_metric.replace('_', ' ')}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Traffic Split:</span>
+                          <span className="ml-2 font-medium">
+                            {test.test_config?.traffic_split.control || 50}% / {test.test_config?.traffic_split.variant || 50}%
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <span className="text-gray-600">Progress</span>
+                          <span className="font-medium">{progressPercent.toFixed(0)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-blue-600 h-2 rounded-full transition-all"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Refresh indicator */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -370,22 +528,29 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
         </div>
 
         {activePrompt && (
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Play className="w-5 h-5 text-green-600" />
-              <h2 className="text-xl font-bold text-gray-900">Currently Active Prompt</h2>
-              <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                v{activePrompt.prompt_version}
-              </span>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-gray-700 whitespace-pre-wrap">{activePrompt.prompt_content}</p>
-            </div>
-            {activePrompt.performance_metrics && (
-              <div className="mt-4 text-sm text-gray-600">
-                <strong>Performance:</strong> {JSON.stringify(activePrompt.performance_metrics, null, 2)}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-1 mb-8">
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                  <Play className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Currently Active Prompt</h2>
+                  <p className="text-sm text-gray-600">This is the prompt all users see right now</p>
+                </div>
+                <span className="ml-auto bg-green-500 text-white text-lg px-4 py-2 rounded-full font-bold">
+                  Version {activePrompt.prompt_version}
+                </span>
               </div>
-            )}
+              <div className="bg-gray-50 rounded-lg p-4 border-2 border-green-200">
+                <p className="text-gray-700 whitespace-pre-wrap">{activePrompt.prompt_content}</p>
+              </div>
+              {activePrompt.performance_metrics && (
+                <div className="mt-4 text-sm text-gray-600">
+                  <strong>Performance:</strong> {JSON.stringify(activePrompt.performance_metrics, null, 2)}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -414,24 +579,23 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
               {prompts.map((prompt) => (
                 <div 
                   key={prompt.id}
-                  className={`border rounded-lg p-4 transition-all ${
+                  className={`border rounded-lg p-4 transition-all relative ${
                     prompt.is_active 
                       ? 'border-green-500 bg-green-50 ring-2 ring-green-500 ring-opacity-50' 
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 hover:border-gray-300 opacity-60'
                   }`}
                 >
+                  {prompt.is_active && (
+                    <div className="absolute -top-3 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                      ACTIVE - USERS SEE THIS
+                    </div>
+                  )}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-900">
                         Version {prompt.prompt_version}
                       </span>
-                      {prompt.is_active && (
-                        <>
-                          <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold animate-pulse">
-                            🟢 CURRENTLY ACTIVE
-                          </span>
-                        </>
-                      )}
+
                       {prompt.a_b_test_group && (
                         <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                           {prompt.a_b_test_group}
@@ -511,6 +675,8 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
                     type="radio" 
                     name="activation-method" 
                     value="immediate"
+                    checked={selectedActivationMethod === 'immediate'}
+                    onChange={() => setSelectedActivationMethod('immediate')}
                     className="mt-1"
                   />
                   <div>
@@ -524,15 +690,116 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
                     type="radio" 
                     name="activation-method" 
                     value="test"
-                    defaultChecked
+                    checked={selectedActivationMethod === 'test'}
+                    onChange={() => setSelectedActivationMethod('test')}
                     className="mt-1"
                   />
                   <div>
-                    <p className="font-medium text-gray-900">Run A/B test first (Coming Soon)</p>
+                    <p className="font-medium text-gray-900">Run A/B test first</p>
                     <p className="text-sm text-gray-600">Compare performance before fully switching</p>
                   </div>
                 </label>
               </div>
+
+              {selectedActivationMethod === 'test' && (
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <h4 className="font-medium text-gray-900 mb-3">A/B Test Configuration</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Test Name
+                      </label>
+                      <input
+                        type="text"
+                        value={testConfig.testName}
+                        onChange={(e) => setTestConfig({...testConfig, testName: e.target.value})}
+                        placeholder="e.g., Improved Clarity Test"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Success Metric
+                      </label>
+                      <select
+                        value={testConfig.successMetric}
+                        onChange={(e) => setTestConfig({...testConfig, successMetric: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      >
+                        <option value="satisfaction_score">User Satisfaction</option>
+                        <option value="positive_feedback_rate">Positive Feedback %</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Test Duration (days)
+                      </label>
+                      <input
+                        type="number"
+                        value={testConfig.duration}
+                        onChange={(e) => setTestConfig({...testConfig, duration: parseInt(e.target.value)})}
+                        min="7"
+                        max="30"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Sample Size
+                      </label>
+                      <input
+                        type="number"
+                        value={testConfig.minimumSampleSize}
+                        onChange={(e) => setTestConfig({...testConfig, minimumSampleSize: parseInt(e.target.value)})}
+                        min="50"
+                        step="50"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Traffic Split
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-gray-600">Current: {testConfig.trafficSplit.control}%</span>
+                      <input
+                        type="range"
+                        min="10"
+                        max="90"
+                        value={testConfig.trafficSplit.control}
+                        onChange={(e) => {
+                          const control = parseInt(e.target.value)
+                          setTestConfig({
+                            ...testConfig, 
+                            trafficSplit: { control, variant: 100 - control }
+                          })
+                        }}
+                        className="flex-1"
+                      />
+                      <span className="text-sm text-gray-600">New: {testConfig.trafficSplit.variant}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Test Description
+                    </label>
+                    <textarea
+                      value={testConfig.testDescription}
+                      onChange={(e) => setTestConfig({...testConfig, testDescription: e.target.value})}
+                      placeholder="What are you hoping to improve with this prompt?"
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center justify-between">
@@ -544,13 +811,17 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
               </button>
               
               <button
-                onClick={() => {
-                  activatePrompt(selectedPromptForTest.id)
-                  setShowABTestModal(false)
+                onClick={async () => {
+                  if (selectedActivationMethod === 'immediate') {
+                    await activatePrompt(selectedPromptForTest.id)
+                    setShowABTestModal(false)
+                  } else {
+                    await createABTest()
+                  }
                 }}
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
-                Activate Immediately
+                {selectedActivationMethod === 'immediate' ? 'Activate Immediately' : 'Start A/B Test'}
               </button>
             </div>
           </div>
