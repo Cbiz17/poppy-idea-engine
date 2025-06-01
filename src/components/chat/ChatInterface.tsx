@@ -255,6 +255,27 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           const loaded = await loadConversation(continueId)
           if (loaded) {
             setCurrentConversationId(continueId)
+            
+            // Create supabase client
+            const supabase = createClient()
+            
+            // Load the conversation messages
+            const { data: messages } = await supabase
+              .from('conversation_messages')
+              .select('*')
+              .eq('conversation_id', continueId)
+              .order('created_at', { ascending: true })
+            
+            if (messages && messages.length > 0) {
+              const formattedMessages = messages.map((m: any) => ({
+                id: m.id,
+                content: m.content,
+                role: m.role as 'user' | 'assistant',
+                timestamp: new Date(m.created_at)
+              }))
+              setMessages(formattedMessages)
+            }
+            
             // Check if this conversation has an associated idea
             const { data: conv } = await supabase
               .from('conversations')
