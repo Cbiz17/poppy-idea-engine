@@ -583,7 +583,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex flex-col overflow-hidden">
       <ChatHeader
         user={user}
         messagesLength={messages.length}
@@ -607,64 +607,91 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           />
         )}
         
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth relative">
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              currentIdeaContext={currentIdeaContext}
-              onSaveIdea={handleSaveIdea}
-              onBranchIdea={handleBranchIdea}
-              onQuickSave={handleQuickSave}
-              showSavePrompt={showSavePrompt === message.id}
-              onHandleSaveIdea={handleSaveIdea}
-              onDismissSavePrompt={() => setShowSavePrompt(null)}
-              isLoading={isLoading}
-              suggestedIdeaForReview={suggestedIdeaForReview}
-            />
-          ))}
-          
-          {isLoading && !isReviewModalOpen && !isEnhancedModalOpen && (
-            <div className="flex justify-start">
-              <div className="bg-white border border-gray-200 rounded-2xl px-6 py-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+        {/* Main chat area with proper scroll container */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 pb-4">
+            <div className="space-y-6">
+              {messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  currentIdeaContext={currentIdeaContext}
+                  onSaveIdea={handleSaveIdea}
+                  onBranchIdea={handleBranchIdea}
+                  onQuickSave={handleQuickSave}
+                  showSavePrompt={showSavePrompt === message.id}
+                  onHandleSaveIdea={handleSaveIdea}
+                  onDismissSavePrompt={() => setShowSavePrompt(null)}
+                  isLoading={isLoading}
+                  suggestedIdeaForReview={suggestedIdeaForReview}
+                />
+              ))}
+              
+              {isLoading && !isReviewModalOpen && !isEnhancedModalOpen && (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-gray-200 rounded-2xl px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {/* Spacer div to ensure scroll to bottom works properly */}
+              <div ref={messagesEndRef} className="h-4" />
             </div>
-          )}
-          
-          <div ref={messagesEndRef} />
-          
-          {/* New messages indicator */}
-          {hasNewMessages && !isNearBottom && (
-            <button
-              onClick={() => {
-                scrollToBottom('smooth')
-                setHasNewMessages(false)
-              }}
-              className="fixed bottom-24 right-8 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-purple-700 transition-all flex items-center gap-2 animate-bounce"
-            >
-              <span>New message</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </button>
-          )}
-        </div>
+          </div>
 
-        <ChatInput
-          value={input}
-          onChange={setInput}
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-          showWelcomePulse={showWelcomePulse}
-          messagesLength={messages.length}
-        />
+          {/* Input area - fixed at bottom of chat container */}
+          <ChatInput
+            value={input}
+            onChange={setInput}
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            showWelcomePulse={showWelcomePulse}
+            messagesLength={messages.length}
+          />
+        </div>
       </div>
       
+      {/* New messages indicator - positioned relative to viewport */}
+      {hasNewMessages && !isNearBottom && (
+        <button
+          onClick={() => {
+            scrollToBottom('smooth')
+            setHasNewMessages(false)
+          }}
+          className="fixed bottom-32 right-8 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-purple-700 transition-all flex items-center gap-2 animate-bounce z-20"
+        >
+          <span>New message</span>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </button>
+      )}
+      
+      {/* Floating save button - positioned above input */}
+      {showFloatingSave && hasValueableContent && (
+        <FloatingSaveButton
+          hasValueableContent={hasValueableContent}
+          currentIdeaContext={currentIdeaContext}
+          continuationContext={continuationContext}
+          onQuickSave={() => handleQuickSave()}
+          onSaveAsNew={() => handleQuickSave()}
+          onUpdate={() => {
+            const lastAssistant = messages.filter(m => m.role === 'assistant' && m.id !== '1').pop()
+            if (lastAssistant) handleSaveIdea(lastAssistant.id)
+          }}
+          onContinue={() => {
+            const lastAssistant = messages.filter(m => m.role === 'assistant' && m.id !== '1').pop()
+            if (lastAssistant) handleSaveIdea(lastAssistant.id)
+          }}
+        />
+      )}
+      
+      {/* Modals */}
       {suggestedIdeaForReview && !continuationContext && !currentIdeaContext && (
         <IdeaReviewModal
           isOpen={isReviewModalOpen}
@@ -704,24 +731,6 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           }}
           onSave={handleConfirmSaveIdea}
           categories={[...CATEGORIES]}
-        />
-      )}
-      
-      {showFloatingSave && hasValueableContent && (
-        <FloatingSaveButton
-          hasValueableContent={hasValueableContent}
-          currentIdeaContext={currentIdeaContext}
-          continuationContext={continuationContext}
-          onQuickSave={() => handleQuickSave()}
-          onSaveAsNew={() => handleQuickSave()}
-          onUpdate={() => {
-            const lastAssistant = messages.filter(m => m.role === 'assistant' && m.id !== '1').pop()
-            if (lastAssistant) handleSaveIdea(lastAssistant.id)
-          }}
-          onContinue={() => {
-            const lastAssistant = messages.filter(m => m.role === 'assistant' && m.id !== '1').pop()
-            if (lastAssistant) handleSaveIdea(lastAssistant.id)
-          }}
         />
       )}
       

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ThumbsUp, ThumbsDown, Star, MessageSquare, Sparkles, Trophy, TrendingUp, Zap, Heart, Gift, Target } from 'lucide-react'
 import confetti from 'canvas-confetti'
 
@@ -40,6 +40,9 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
     "💡 You're helping shape the future of Poppy!"
   ]
 
+  // Select a message once when feedback is given, not on every render
+  const [selectedMessage, setSelectedMessage] = useState<string>('')
+
   // Stop pulsing after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => setShowPulse(false), 5000)
@@ -70,6 +73,10 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
   }
 
   const triggerCelebration = (points: number) => {
+    // Select encouragement message once
+    const randomIndex = Math.floor(Math.random() * encouragementMessages.length)
+    setSelectedMessage(encouragementMessages[randomIndex])
+    
     // Visual celebration
     setEarnedPoints(points)
     setShowReward(true)
@@ -155,10 +162,10 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
 
   if (feedbackGiven) {
     return (
-      <div className="mt-4 pt-4 border-t-2 border-gray-100 min-h-[180px]">
+      <div className="mt-4 pt-4 border-t-2 border-gray-100">
         <div className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 relative overflow-hidden">
         {/* Animated background pattern */}
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-0 left-0 w-40 h-40 bg-purple-400 rounded-full filter blur-3xl animate-pulse"></div>
           <div className="absolute bottom-0 right-0 w-40 h-40 bg-blue-400 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
@@ -175,7 +182,7 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
           <div className="flex items-center gap-2 text-sm text-purple-700">
             <Sparkles className="w-4 h-4 animate-pulse" />
             <span className="font-medium">
-              {encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)]}
+              {selectedMessage}
             </span>
           </div>
           
@@ -202,8 +209,11 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
     )
   }
 
+  // Progress percentage should be stable
+  const progressPercentage = 78 // This could be calculated from actual data
+
   return (
-    <div className="mt-4 pt-4 border-t-2 border-gray-100 min-h-[180px] transition-all duration-300">
+    <div className="mt-4 pt-4 border-t-2 border-gray-100 transition-all duration-300">
       {!showDetailedFeedback ? (
         <div className="space-y-3">
           {/* Progress indicator */}
@@ -213,10 +223,10 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
                 <TrendingUp className="w-4 h-4 text-purple-600" />
                 <span className="text-xs font-medium text-purple-700">Poppy Learning Progress</span>
               </div>
-              <span className="text-xs text-purple-600">78% improved this week</span>
+              <span className="text-xs text-purple-600">{progressPercentage}% improved this week</span>
             </div>
             <div className="w-full bg-purple-100 rounded-full h-2">
-              <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500" style={{ width: '78%' }}></div>
+              <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500" style={{ width: `${progressPercentage}%` }}></div>
             </div>
           </div>
           
@@ -241,7 +251,7 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
               >
                 <ThumbsUp className="w-4 h-4" />
                 <span className="text-xs font-medium">Helpful</span>
-                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                   +10 XP
                 </span>
               </button>
@@ -253,7 +263,7 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
               >
                 <ThumbsDown className="w-4 h-4" />
                 <span className="text-xs font-medium">Not helpful</span>
-                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                   +10 XP
                 </span>
               </button>
@@ -265,7 +275,7 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
               >
                 <MessageSquare className="w-4 h-4" />
                 <span className="text-xs font-medium">More feedback</span>
-                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                   +20-50 XP
                 </span>
               </button>
@@ -294,7 +304,7 @@ export default function EnhancedFeedbackComponent({ messageId, onFeedbackSubmitt
             </h4>
             <button
               onClick={() => setShowDetailedFeedback(false)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 text-xl leading-none"
             >
               ×
             </button>

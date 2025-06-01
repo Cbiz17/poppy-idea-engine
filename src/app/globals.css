@@ -142,3 +142,76 @@ input:-webkit-autofill:active {
     transform: translateY(0);
   }
 }
+
+/* Chat Layout Fixes */
+/* Ensure the chat container uses proper flexbox layout */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Fix for the chat messages area */
+.chat-messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px; /* Add some padding at the bottom */
+  scroll-behavior: smooth;
+}
+
+/* Ensure the input area stays at the bottom and is always visible */
+.chat-input-container {
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
+  padding: 1.5rem;
+}
+
+/* Fix for feedback component to not push content */
+.feedback-container {
+  position: relative;
+  z-index: 5;
+}
+
+/* Ensure modals don't affect chat scroll */
+.modal-open .chat-messages-container {
+  overflow-y: hidden;
+}
+
+/* Fix for floating save button position */
+.floating-save-button {
+  position: fixed;
+  bottom: 120px; /* Above the input area */
+  right: 2rem;
+  z-index: 20;
+}
+
+/* Ensure proper spacing for messages */
+.chat-message {
+  margin-bottom: 1.5rem;
+}
+
+/* Fix for the enhanced feedback component height */
+.enhanced-feedback-component {
+  min-height: auto; /* Remove the fixed min-height */
+  transition: all 0.3s ease;
+}
+
+/* Ensure tooltips don't interfere with layout */
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Fix for new message indicator positioning */
+.new-message-indicator {
+  position: fixed;
+  bottom: 140px; /* Above the input area with some spacing */
+  right: 2rem;
+  z-index: 25;
+}
