@@ -59,11 +59,6 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isNearBottom, setIsNearBottom] = useState(true)
   const [hasNewMessages, setHasNewMessages] = useState(false)
-  
-  // Debug: Log URL params immediately
-  console.log('🔴 ChatInterface: Rendering with URL:', window.location.href)
-  console.log('🔴 ChatInterface: searchParams.get("continue"):', searchParams.get('continue'))
-  console.log('🔴 ChatInterface: searchParams.get("idea"):', searchParams.get('idea'))
 
   // State
   const [input, setInput] = useState('')
@@ -247,69 +242,49 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   useEffect(() => {
     const initializeChat = async () => {
       setIsInitializing(true)
-      console.log('🔵 ChatInterface: Starting initialization...')
-      
-      // Get params directly from URL on mount
-      const urlParams = new URLSearchParams(window.location.search)
-      const ideaId = urlParams.get('idea')
-      const continueId = urlParams.get('continue')
-      
-      console.log('🔵 ChatInterface: URL params from window.location - idea:', ideaId, 'continue:', continueId)
-      console.log('🔵 ChatInterface: URL params from searchParams - idea:', searchParams.get('idea'), 'continue:', searchParams.get('continue'))
       
       try {
+        const ideaId = searchParams.get('idea')
+        const continueId = searchParams.get('continue')
         
-        // Don't re-initialize if we already loaded this conversation/idea
-        // BUT only check this if we actually have loaded something (not on first mount)
-        if (hasLoadedIdea && ((ideaId && ideaId === currentIdeaContext?.id) || 
-            (continueId && continueId === currentConversationId))) {
-          console.log('🔵 ChatInterface: Skipping initialization - already loaded')
+        // Don't re-initialize if already loaded
+        if (hasLoadedIdea && ideaId === currentIdeaContext?.id) {
           setIsInitializing(false)
           return
         }
         
-        if (ideaId && !hasLoadedIdea) {
-          console.log('🔵 ChatInterface: Loading idea:', ideaId)
+        if (ideaId) {
           clearMessages()
           await loadIdeaIntoChat(ideaId)
           setHasLoadedIdea(true)
-        } else if (continueId && !hasLoadedIdea) {
-          // Load previous conversation - treat it just like loading an idea
-          console.log('🔵 ChatInterface: Loading conversation with ID:', continueId)
+        } else if (continueId) {
+          // Load previous conversation
           clearMessages()
           const loaded = await loadConversation(continueId)
-          console.log('🔵 ChatInterface: Conversation loaded?', !!loaded, loaded)
+          
           if (!loaded) {
-            // Conversation not found or unauthorized
-            console.error('🔵 ChatInterface: Could not load conversation:', continueId)
             setMessages([{
               id: 'error-' + Date.now(),
-              content: "I couldn't find that conversation. It may have been deleted or you don't have access to it. Let's start fresh!",
+              content: "I couldn't find that conversation. Let's start fresh!",
               role: 'assistant',
               timestamp: new Date()
             }])
-            // Clear the URL parameter
             window.history.replaceState({}, '', '/chat')
+            setIsInitializing(false)
             return
           }
           
           setCurrentConversationId(continueId)
           
-          // Create supabase client
-          const supabase = createClient()
-          
-          // Load the conversation messages
-          const { data: messages, error: messagesError } = await supabase
+          // Load messages
+          const { data: messages } = await supabase
             .from('conversation_messages')
             .select('*')
             .eq('conversation_id', continueId)
             .eq('user_id', user.id)
             .order('created_at', { ascending: true })
           
-          if (messagesError) {
-            console.error('🔵 ChatInterface: Error loading messages:', messagesError)
-          } else if (messages && messages.length > 0) {
-            console.log('🔵 ChatInterface: Found', messages.length, 'messages')
+          if (messages && messages.length > 0) {
             const formattedMessages = messages.map((m: any) => ({
               id: m.id,
               content: m.content,
@@ -317,32 +292,11 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
               timestamp: new Date(m.created_at)
             }))
             setMessages(formattedMessages)
-            console.log('🔵 ChatInterface: Messages set successfully')
-          } else {
-            // No messages found, show a helpful message
-            console.log('🔵 ChatInterface: No messages found for conversation')
-            setMessages([{
-              id: 'continue-' + Date.now(),
-              content: "I found your previous conversation, but it appears to be empty. Let's start fresh! What would you like to explore?",
-              role: 'assistant',
-              timestamp: new Date()
-            }])
           }
           
-          // Check if this conversation has an associated idea
-          const { data: conv } = await supabase
-            .from('conversations')
-            .select('idea_id, ideas!left(*)')
-            .eq('id', continueId)
-            .single()
-          
-          if (conv?.idea_id && conv.ideas) {
-            // conv.ideas is an array from left join, get the first (and only) item
-            setCurrentIdeaContext(Array.isArray(conv.ideas) ? conv.ideas[0] : conv.ideas)
-          }
           setHasLoadedIdea(true)
-        } else if (!ideaId && !continueId && !hasLoadedIdea) {
-          console.log('🔵 ChatInterface: No idea or continue params, showing welcome')
+        } else {
+          // No params - show welcome
           const welcomeMessage = await generateWelcomeMessage()
           setMessages([welcomeMessage])
           

@@ -11,15 +11,10 @@ export function WelcomeActions() {
   const handleActionButton = async (action: string, data?: any) => {
     const welcomeData = (window as any).__poppyWelcomeData
     
-    console.log('🔍 WelcomeActions: Action triggered:', action, 'with data:', data)
-    console.log('🔍 WelcomeActions: Welcome data available:', welcomeData)
-    
     switch (action) {
       case 'continue-last':
-        console.log('🔍 WelcomeActions: Continue-last case, conversationId:', data?.conversationId)
         if (data?.conversationId) {
-          devLogger.info('WelcomeActions', 'Continuing last conversation', { conversationId: data.conversationId })
-          console.log('🔍 WelcomeActions: Navigating to:', `/chat?continue=${data.conversationId}`)
+          // Just navigate - exactly like develop-idea does
           window.location.href = `/chat?continue=${data.conversationId}`
         }
         break
