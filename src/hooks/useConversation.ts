@@ -109,10 +109,16 @@ export function useConversation({ user, initialIdeaId }: UseConversationProps) {
         .from('conversations')
         .select()
         .eq('id', conversationId)
+        .eq('user_id', user.id)  // CRITICAL: Verify user owns this conversation
         .single()
 
       if (error) {
         console.error('Error loading conversation:', error)
+        return null
+      }
+
+      if (!data) {
+        console.error('Conversation not found or unauthorized')
         return null
       }
 
@@ -122,7 +128,7 @@ export function useConversation({ user, initialIdeaId }: UseConversationProps) {
       console.error('Error in loadConversation:', error)
       return null
     }
-  }, [supabase])
+  }, [user.id, supabase])
 
   const updateConversationTitle = useCallback(async (title: string): Promise<boolean> => {
     if (!currentConversationId) return false

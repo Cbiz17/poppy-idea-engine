@@ -246,49 +246,79 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         const ideaId = searchParams.get('idea')
         const continueId = searchParams.get('continue')
         
+        // Don't re-initialize if we already loaded this conversation/idea
+        if ((ideaId && ideaId === currentIdeaContext?.id) || 
+            (continueId && continueId === currentConversationId)) {
+          setIsInitializing(false)
+          return
+        }
+        
         if (ideaId && !hasLoadedIdea) {
           clearMessages()
           await loadIdeaIntoChat(ideaId)
-        } else if (continueId && !hasLoadedIdea) {
+        } else if (continueId) {
           // Load previous conversation
           clearMessages()
           const loaded = await loadConversation(continueId)
-          if (loaded) {
-            setCurrentConversationId(continueId)
-            
-            // Create supabase client
-            const supabase = createClient()
-            
-            // Load the conversation messages
-            const { data: messages } = await supabase
-              .from('conversation_messages')
-              .select('*')
-              .eq('conversation_id', continueId)
-              .order('created_at', { ascending: true })
-            
-            if (messages && messages.length > 0) {
-              const formattedMessages = messages.map((m: any) => ({
-                id: m.id,
-                content: m.content,
-                role: m.role as 'user' | 'assistant',
-                timestamp: new Date(m.created_at)
-              }))
-              setMessages(formattedMessages)
-            }
-            
-            // Check if this conversation has an associated idea
-            const { data: conv } = await supabase
-              .from('conversations')
-              .select('idea_id, ideas!left(*)')
-              .eq('id', continueId)
-              .single()
-            
-            if (conv?.idea_id && conv.ideas) {
-              // conv.ideas is an array from left join, get the first (and only) item
-              setCurrentIdeaContext(Array.isArray(conv.ideas) ? conv.ideas[0] : conv.ideas)
-            }
-            setHasLoadedIdea(true)
+          if (!loaded) {
+            // Conversation not found or unauthorized
+            console.error('Could not load conversation:', continueId)
+            setMessages([{
+              id: 'error-' + Date.now(),
+              content: "I couldn't find that conversation. It may have been deleted or you don't have access to it. Let's start fresh!",
+              role: 'assistant',
+              timestamp: new Date()
+            }])
+            // Clear the URL parameter
+            window.history.replaceState({}, '', '/chat')
+            return
           }
+          
+          setCurrentConversationId(continueId)
+          
+          // Create supabase client
+          const supabase = createClient()
+          
+          // Load the conversation messages
+          const { data: messages, error: messagesError } = await supabase
+            .from('conversation_messages')
+            .select('*')
+            .eq('conversation_id', continueId)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: true })
+          
+          if (messagesError) {
+            console.error('Error loading messages:', messagesError)
+          } else if (messages && messages.length > 0) {
+            const formattedMessages = messages.map((m: any) => ({
+              id: m.id,
+              content: m.content,
+              role: m.role as 'user' | 'assistant',
+              timestamp: new Date(m.created_at)
+            }))
+            setMessages(formattedMessages)
+          } else {
+            // No messages found, show a helpful message
+            setMessages([{
+              id: 'continue-' + Date.now(),
+              content: "I found your previous conversation, but it appears to be empty. Let's start fresh! What would you like to explore?",
+              role: 'assistant',
+              timestamp: new Date()
+            }])
+          }
+          
+          // Check if this conversation has an associated idea
+          const { data: conv } = await supabase
+            .from('conversations')
+            .select('idea_id, ideas!left(*)')
+            .eq('id', continueId)
+            .single()
+          
+          if (conv?.idea_id && conv.ideas) {
+            // conv.ideas is an array from left join, get the first (and only) item
+            setCurrentIdeaContext(Array.isArray(conv.ideas) ? conv.ideas[0] : conv.ideas)
+          }
+          setHasLoadedIdea(true)
         } else if (!ideaId && !continueId && !hasLoadedIdea) {
           const welcomeMessage = await generateWelcomeMessage()
           setMessages([welcomeMessage])
