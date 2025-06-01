@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { User } from '@supabase/supabase-js'
 import { 
@@ -47,12 +47,49 @@ interface PromptsAdminProps {
 export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsAdminProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResults, setAnalysisResults] = useState<any>(null)
+  const [currentFeedback, setCurrentFeedback] = useState(recentFeedback)
+  const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [isRefreshing, setIsRefreshing] = useState(false)
   
   // Create Supabase client
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  // Fetch fresh feedback data
+  const refreshFeedbackData = async () => {
+    setIsRefreshing(true)
+    try {
+      const { data: feedbackData, error } = await supabase
+        .from('message_feedback')
+        .select(`
+          *,
+          conversation_messages(content, role)
+        `)
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+      if (!error && feedbackData) {
+        setCurrentFeedback(feedbackData)
+        setLastRefresh(new Date())
+      }
+    } catch (error) {
+      console.error('Error refreshing feedback:', error)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  // Set up auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshFeedbackData()
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -112,38 +149,38 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
     }
   }
 
-  console.log('Recent feedback data:', recentFeedback.slice(0, 3)); // Debug first 3 entries
-  console.log('Feedback with null messages:', recentFeedback.filter(f => !f.conversation_messages).length);
+  console.log('Recent feedback data:', currentFeedback.slice(0, 3)); // Debug first 3 entries
+  console.log('Feedback with null messages:', currentFeedback.filter(f => !f.conversation_messages).length);
   console.log('Feedback types breakdown:', {
-    thumbs_up: recentFeedback.filter(f => f.feedback_type === 'thumbs_up').length,
-    thumbs_down: recentFeedback.filter(f => f.feedback_type === 'thumbs_down').length,
-    rating: recentFeedback.filter(f => f.feedback_type === 'rating').length,
-    other: recentFeedback.filter(f => !['thumbs_up', 'thumbs_down', 'rating'].includes(f.feedback_type)).length
+    thumbs_up: currentFeedback.filter(f => f.feedback_type === 'thumbs_up').length,
+    thumbs_down: currentFeedback.filter(f => f.feedback_type === 'thumbs_down').length,
+    rating: currentFeedback.filter(f => f.feedback_type === 'rating').length,
+    other: currentFeedback.filter(f => !['thumbs_up', 'thumbs_down', 'rating'].includes(f.feedback_type)).length
   });
   console.log('Feedback values for thumbs:', {
-    thumbs_up_values: recentFeedback.filter(f => f.feedback_type === 'thumbs_up').map(f => f.feedback_value),
-    thumbs_down_values: recentFeedback.filter(f => f.feedback_type === 'thumbs_down').map(f => f.feedback_value)
+    thumbs_up_values: currentFeedback.filter(f => f.feedback_type === 'thumbs_up').map(f => f.feedback_value),
+    thumbs_down_values: currentFeedback.filter(f => f.feedback_type === 'thumbs_down').map(f => f.feedback_value)
   });
   
   const feedbackStats = {
-    total: recentFeedback.length,
-    positive: recentFeedback.filter(f => {
+    total: currentFeedback.length,
+    positive: currentFeedback.filter(f => {
       // Thumbs up OR rating >= 4 (but not negative thumbs which have value = -1)
       if (f.feedback_type === 'thumbs_up') return true;
       if (f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value >= 4) return true;
       return false;
     }).length,
-    negative: recentFeedback.filter(f => {
+    negative: currentFeedback.filter(f => {
       // Thumbs down OR rating <= 2 (but only for actual ratings, not thumbs)
       if (f.feedback_type === 'thumbs_down') return true;
       if (f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value <= 2) return true;
       return false;
     }).length,
-    avgRating: recentFeedback.length > 0 
-      ? recentFeedback
+    avgRating: currentFeedback.length > 0 
+      ? currentFeedback
           .filter(f => f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value > 0)
           .reduce((sum, f) => sum + (f.feedback_value || 0), 0) / 
-        Math.max(recentFeedback.filter(f => f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value > 0).length, 1)
+        Math.max(currentFeedback.filter(f => f.feedback_type === 'rating' && f.feedback_value !== null && f.feedback_value > 0).length, 1)
       : 0
   }
   
@@ -198,6 +235,24 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Refresh indicator */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>Last updated: {lastRefresh.toLocaleTimeString()}</span>
+            {isRefreshing && (
+              <RefreshCw className="w-4 h-4 animate-spin text-purple-600" />
+            )}
+          </div>
+          <button
+            onClick={refreshFeedbackData}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh Now
+          </button>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center gap-3">
