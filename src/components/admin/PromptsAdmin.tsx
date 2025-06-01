@@ -15,7 +15,9 @@ import {
   ThumbsDown,
   RefreshCw,
   FlaskConical,
-  Info
+  Info,
+  Edit,
+  Plus
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -54,6 +56,9 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showABTestModal, setShowABTestModal] = useState(false)
   const [selectedPromptForTest, setSelectedPromptForTest] = useState<Prompt | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null)
+  const [editedContent, setEditedContent] = useState('')
   
   // Create Supabase client
   const supabase = createBrowserClient(
@@ -103,6 +108,33 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
   const handleActivateClick = (prompt: Prompt) => {
     setSelectedPromptForTest(prompt)
     setShowABTestModal(true)
+  }
+
+  const handleEditClick = (prompt: Prompt) => {
+    setEditingPrompt(prompt)
+    setEditedContent(prompt.prompt_content)
+    setShowEditModal(true)
+  }
+
+  const saveEditedPrompt = async () => {
+    if (!editingPrompt) return
+
+    try {
+      const { error } = await supabase
+        .from('dynamic_prompts')
+        .update({ prompt_content: editedContent })
+        .eq('id', editingPrompt.id)
+
+      if (error) {
+        alert('Error saving prompt: ' + error.message)
+      } else {
+        alert('Prompt updated successfully!')
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Error saving prompt:', error)
+      alert('Failed to save prompt')
+    }
   }
 
   const activatePrompt = async (promptId: string) => {
@@ -358,7 +390,20 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
         )}
 
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">All Prompt Versions</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">All Prompt Versions</h2>
+            <button
+              onClick={() => {
+                setEditingPrompt(null)
+                setEditedContent('')
+                setShowEditModal(true)
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Create New Prompt
+            </button>
+          </div>
           
           {prompts.length === 0 ? (
             <p className="text-gray-500 text-center py-8">
@@ -371,7 +416,7 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
                   key={prompt.id}
                   className={`border rounded-lg p-4 transition-all ${
                     prompt.is_active 
-                      ? 'border-green-300 bg-green-50' 
+                      ? 'border-green-500 bg-green-50 ring-2 ring-green-500 ring-opacity-50' 
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -381,9 +426,11 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
                         Version {prompt.prompt_version}
                       </span>
                       {prompt.is_active && (
-                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                          ACTIVE
-                        </span>
+                        <>
+                          <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold animate-pulse">
+                            🟢 CURRENTLY ACTIVE
+                          </span>
+                        </>
                       )}
                       {prompt.a_b_test_group && (
                         <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
@@ -396,6 +443,13 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
                       <span className="text-sm text-gray-500">
                         {new Date(prompt.created_at).toLocaleDateString()}
                       </span>
+                      <button
+                        onClick={() => handleEditClick(prompt)}
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                      >
+                        <Edit className="w-3 h-3" />
+                        Edit
+                      </button>
                       {!prompt.is_active && (
                         <button
                           onClick={() => handleActivateClick(prompt)}
@@ -497,6 +551,91 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
                 Activate Immediately
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit/Create Prompt Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              {editingPrompt ? `Edit Prompt Version ${editingPrompt.prompt_version}` : 'Create New Prompt'}
+            </h3>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Prompt Content
+              </label>
+              <textarea
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                rows={12}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                placeholder="Enter your prompt content here..."
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Tip: Be specific about tone, approach, and what makes responses valuable.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="text-sm text-blue-900">
+                  <p className="font-medium mb-1">Prompt Best Practices:</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>Define the AI's role clearly (e.g., "You are Poppy, an AI assistant...")</li>
+                    <li>Specify the desired tone and communication style</li>
+                    <li>Include specific instructions for handling different scenarios</li>
+                    <li>Mention key objectives (e.g., helping users develop ideas)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setEditingPrompt(null)
+                  setEditedContent('')
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              
+              <button
+                onClick={async () => {
+                  if (editingPrompt) {
+                    await saveEditedPrompt()
+                  } else {
+                    // Create new prompt
+                    const response = await fetch('/api/prompts', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        action: 'create_variant',
+                        promptContent: editedContent,
+                        description: 'Manually created prompt'
+                      })
+                    })
+                    if (response.ok) {
+                      alert('New prompt created successfully!')
+                      window.location.reload()
+                    } else {
+                      alert('Failed to create prompt')
+                    }
+                  }
+                  setShowEditModal(false)
+                }}
+                disabled={!editedContent.trim()}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {editingPrompt ? 'Save Changes' : 'Create Prompt'}
               </button>
             </div>
           </div>
