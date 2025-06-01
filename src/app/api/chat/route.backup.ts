@@ -97,71 +97,12 @@ export async function POST(req: Request) {
   }
 }
 
-// Function to get dynamic system prompt with A/B testing support
+// Function to get dynamic system prompt
 async function getDynamicSystemPrompt(): Promise<string> {
   try {
     const supabase = await createServerSupabaseClient();
     
-    // Get the current user to check for A/B test assignment
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
-      // Check if user is part of any active A/B test
-      const { data: testVariant } = await supabase
-        .rpc('get_user_test_variant', {
-          p_user_id: user.id,
-          p_test_type: 'prompt_variation'
-        });
-
-      console.log('[A/B Testing] User test variant:', testVariant);
-
-      // If user is assigned to a test variant, get that specific prompt
-      if (testVariant && testVariant.length > 0) {
-        const assignment = testVariant[0];
-        const { data: testInfo } = await supabase
-          .from('ab_tests')
-          .select('variants')
-          .eq('id', assignment.test_id)
-          .single();
-
-        if (testInfo) {
-          const promptId = assignment.variant_group === 'control' 
-            ? testInfo.variants.control.prompt_id 
-            : testInfo.variants.variant.prompt_id;
-
-          const { data: variantPrompt } = await supabase
-            .from('dynamic_prompts')
-            .select('prompt_content, performance_metrics')
-            .eq('id', promptId)
-            .single();
-
-          if (variantPrompt?.prompt_content) {
-            console.log('[A/B Testing] Using test variant prompt:', {
-              testId: assignment.test_id,
-              group: assignment.variant_group,
-              promptVersion: variantPrompt.performance_metrics?.prompt_version || 'unknown'
-            });
-            
-            // Track that this variant was used
-            await supabase
-              .from('user_actions')
-              .insert({
-                user_id: user.id,
-                action_type: 'ab_test_impression',
-                action_context: {
-                  test_id: assignment.test_id,
-                  variant_group: assignment.variant_group,
-                  prompt_id: promptId
-                }
-              });
-
-            return variantPrompt.prompt_content;
-          }
-        }
-      }
-    }
-    
-    // If no A/B test assignment or user not authenticated, get the active prompt
+    // Get the active system prompt
     const { data: activePrompt } = await supabase
       .from('dynamic_prompts')
       .select('prompt_content, performance_metrics')
@@ -172,7 +113,7 @@ async function getDynamicSystemPrompt(): Promise<string> {
       .single();
 
     if (activePrompt?.prompt_content) {
-      console.log('Using active system prompt, version:', activePrompt.performance_metrics?.prompt_version || 'unknown');
+      console.log('Using dynamic system prompt, version:', activePrompt.performance_metrics?.prompt_version || 'unknown');
       return activePrompt.prompt_content;
     }
 

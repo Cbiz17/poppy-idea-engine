@@ -20,6 +20,7 @@ import {
   Plus
 } from 'lucide-react'
 import Link from 'next/link'
+import PromptAnalyticsDashboard from './PromptAnalyticsDashboard'
 
 interface Prompt {
   id: string
@@ -67,6 +68,7 @@ interface PromptsAdminProps {
 }
 
 export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsAdminProps) {
+  const [activeTab, setActiveTab] = useState<'prompts' | 'analytics'>('prompts')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResults, setAnalysisResults] = useState<any>(null)
   const [currentFeedback, setCurrentFeedback] = useState(recentFeedback)

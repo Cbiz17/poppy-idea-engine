@@ -118,65 +118,6 @@ export async function POST(req: Request) {
 
 async function getDynamicSystemPrompt(supabase: SupabaseClient, userId?: string, messages?: ChatMessage[], userContext?: any, feedbackInsights?: any): Promise<string> {
   try {
-    // First check for A/B test assignment if user is authenticated
-    if (userId) {
-      const { data: testVariant } = await supabase
-        .rpc('get_user_test_variant', {
-          p_user_id: userId,
-          p_test_type: 'prompt_variation'
-        });
-
-      console.log('[A/B Testing - Enhanced] User test variant:', testVariant);
-
-      // If user is assigned to a test variant, get that specific prompt
-      if (testVariant && testVariant.length > 0) {
-        const assignment = testVariant[0];
-        const { data: testInfo } = await supabase
-          .from('ab_tests')
-          .select('variants')
-          .eq('id', assignment.test_id)
-          .single();
-
-        if (testInfo) {
-          const promptId = assignment.variant_group === 'control' 
-            ? testInfo.variants.control.prompt_id 
-            : testInfo.variants.variant.prompt_id;
-
-          const { data: variantPrompt } = await supabase
-            .from('dynamic_prompts')
-            .select('prompt_content, performance_metrics')
-            .eq('id', promptId)
-            .single();
-
-          if (variantPrompt?.prompt_content) {
-            console.log('[A/B Testing - Enhanced] Using test variant prompt:', {
-              testId: assignment.test_id,
-              group: assignment.variant_group,
-              promptVersion: variantPrompt.performance_metrics?.prompt_version || 'unknown'
-            });
-            
-            // Track that this variant was used in enhanced mode
-            await supabase
-              .from('user_actions')
-              .insert({
-                user_id: userId,
-                action_type: 'ab_test_impression_enhanced',
-                action_context: {
-                  test_id: assignment.test_id,
-                  variant_group: assignment.variant_group,
-                  prompt_id: promptId,
-                  enhanced_mode: true
-                }
-              });
-
-            // Apply personalization to the A/B test prompt
-            return applyPersonalization(variantPrompt.prompt_content, userContext, feedbackInsights);
-          }
-        }
-      }
-    }
-    
-    // If no A/B test, continue with regular dynamic prompt selection
     // Analyze conversation context to determine the best prompt
     const conversationContext = analyzeConversationContext(messages || []);
     
@@ -192,7 +133,7 @@ async function getDynamicSystemPrompt(supabase: SupabaseClient, userId?: string,
       .maybeSingle();
 
     if (dynamicPrompt) {
-      return applyPersonalization(dynamicPrompt.prompt_content, userContext, feedbackInsights);
+      return dynamicPrompt.prompt_content;
     }
 
     // Fallback to context-aware default prompts
@@ -205,33 +146,30 @@ async function getDynamicSystemPrompt(supabase: SupabaseClient, userId?: string,
 Be encouraging, insightful, and help them organize their thoughts into concrete, actionable ideas.`;
     }
 
-    // Default with personalization
-    const basePrompt = "You are Claude, an AI assistant for the Poppy Idea Engine. Your goal is to help users explore, develop, and organize their ideas. Be insightful, encouraging, and help them break down complex thoughts into actionable concepts.";
-    return applyPersonalization(basePrompt, userContext, feedbackInsights);
-
-  } catch (error) {
-    console.error('Error getting dynamic system prompt:', error);
-    return "You are Claude, an AI assistant for the Poppy Idea Engine. Your goal is to help users explore, develop, and organize their ideas. Be insightful, encouraging, and help them break down complex thoughts into actionable concepts.";
-  }
-}
-
-function applyPersonalization(basePrompt: string, userContext?: any, feedbackInsights?: any): string {
-  if (!userContext && !feedbackInsights) {
-    return basePrompt;
-  }
-
-  const style = userContext?.preferences?.communicationStyle || "balanced";
-  const length = userContext?.preferences?.responseLength || "adaptive";
-  const interests = userContext?.interests?.slice(0, 3).join(", ") || "various topics";
-  
-  return `${basePrompt}
+    // Add personalization based on user context
+    if (userContext) {
+      const style = userContext.preferences?.communicationStyle || "balanced";
+      const length = userContext.preferences?.responseLength || "adaptive";
+      const interests = userContext.interests?.slice(0, 3).join(", ") || "various topics";
+      
+      return `You are Claude, an AI assistant for the Poppy Idea Engine, personalized for this specific user.
 
 User Preferences:
 - Communication style: ${style} (adjust formality accordingly)
 - Response length: ${length} (provide ${length === "concise" ? "brief" : length === "detailed" ? "comprehensive" : "appropriately sized"} responses)
 - Known interests: ${interests}
 ${feedbackInsights?.overallSatisfaction < 3 ? "- Note: User satisfaction has been low. Focus on clarity and relevance." : ""}
-${feedbackInsights?.preferredResponseStyle ? `- Preferred style: ${feedbackInsights.preferredResponseStyle.tone} tone with ${feedbackInsights.preferredResponseStyle.detail} detail` : ""}`;
+${feedbackInsights?.preferredResponseStyle ? `- Preferred style: ${feedbackInsights.preferredResponseStyle.tone} tone with ${feedbackInsights.preferredResponseStyle.detail} detail` : ""}
+
+Your goal is to help this user explore, develop, and organize their ideas in a way that resonates with their personal style. Be ${style === "casual" ? "friendly and approachable" : style === "formal" ? "professional and structured" : "balanced and adaptive"}.`;
+    }
+    // Default fallback
+    return "You are Claude, an AI assistant for the Poppy Idea Engine. Your goal is to help users explore, develop, and organize their ideas. Be insightful, encouraging, and help them break down complex thoughts into actionable concepts.";
+
+  } catch (error) {
+    console.error('Error getting dynamic system prompt:', error);
+    return "You are Claude, an AI assistant for the Poppy Idea Engine. Your goal is to help users explore, develop, and organize their ideas. Be insightful, encouraging, and help them break down complex thoughts into actionable concepts.";
+  }
 }
 
 function analyzeConversationContext(messages: ChatMessage[]) {
