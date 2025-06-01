@@ -13,9 +13,20 @@ export function WelcomeActions() {
     
     switch (action) {
       case 'continue-last':
-        if (data?.conversationId) {
-          // Just navigate - exactly like develop-idea does
-          window.location.href = `/chat?continue=${data.conversationId}`
+        if (data?.conversationId && welcomeData?.lastConversation) {
+          // Work exactly like guided exploration - just populate the input
+          window.dispatchEvent(new CustomEvent('poppy-welcome-action', {
+            detail: { prompt: `Let's continue our conversation about: "${welcomeData.lastConversation.preview}"` }
+          }))
+          
+          // Focus the textarea
+          setTimeout(() => {
+            const textarea = document.querySelector('textarea') as HTMLTextAreaElement
+            if (textarea) {
+              textarea.focus()
+              textarea.setSelectionRange(textarea.value.length, textarea.value.length)
+            }
+          }, 100)
         }
         break
         
