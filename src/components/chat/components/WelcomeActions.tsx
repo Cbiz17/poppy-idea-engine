@@ -11,8 +11,12 @@ export function WelcomeActions() {
   const handleActionButton = async (action: string, data?: any) => {
     const welcomeData = (window as any).__poppyWelcomeData
     
+    console.log('🔍 WelcomeActions: Action triggered:', action, 'with data:', data)
+    console.log('🔍 WelcomeActions: Welcome data available:', welcomeData)
+    
     switch (action) {
       case 'continue-last':
+        console.log('🔍 WelcomeActions: Continue-last case, conversationId:', data?.conversationId)
         if (data?.conversationId) {
           devLogger.info('WelcomeActions', 'Continuing last conversation', { conversationId: data.conversationId })
           
@@ -27,9 +31,11 @@ export function WelcomeActions() {
               .single()
               
             if (conversation?.idea_id) {
+              console.log('🔍 WelcomeActions: Found idea_id, navigating to:', `/chat?idea=${conversation.idea_id}`)
               window.location.href = `/chat?idea=${conversation.idea_id}`
             } else {
               // Load the conversation without an idea
+              console.log('🔍 WelcomeActions: No idea_id, navigating to:', `/chat?continue=${data.conversationId}`)
               window.location.href = `/chat?continue=${data.conversationId}`
             }
           }

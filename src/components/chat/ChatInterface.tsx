@@ -242,9 +242,11 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   useEffect(() => {
     const initializeChat = async () => {
       setIsInitializing(true)
+      console.log('🔵 ChatInterface: Starting initialization...')
       try {
         const ideaId = searchParams.get('idea')
         const continueId = searchParams.get('continue')
+        console.log('🔵 ChatInterface: URL params - idea:', ideaId, 'continue:', continueId)
         
         // Don't re-initialize if we already loaded this conversation/idea
         if ((ideaId && ideaId === currentIdeaContext?.id) || 
@@ -257,12 +259,14 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           clearMessages()
           await loadIdeaIntoChat(ideaId)
         } else if (continueId) {
-          // Load previous conversation
-          clearMessages()
-          const loaded = await loadConversation(continueId)
-          if (!loaded) {
-            // Conversation not found or unauthorized
-            console.error('Could not load conversation:', continueId)
+        // Load previous conversation
+        console.log('🔵 ChatInterface: Loading conversation with ID:', continueId)
+        clearMessages()
+        const loaded = await loadConversation(continueId)
+        console.log('🔵 ChatInterface: Conversation loaded?', !!loaded, loaded)
+        if (!loaded) {
+          // Conversation not found or unauthorized
+          console.error('🔵 ChatInterface: Could not load conversation:', continueId)
             setMessages([{
               id: 'error-' + Date.now(),
               content: "I couldn't find that conversation. It may have been deleted or you don't have access to it. Let's start fresh!",
@@ -288,24 +292,27 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
             .order('created_at', { ascending: true })
           
           if (messagesError) {
-            console.error('Error loading messages:', messagesError)
+          console.error('🔵 ChatInterface: Error loading messages:', messagesError)
           } else if (messages && messages.length > 0) {
-            const formattedMessages = messages.map((m: any) => ({
-              id: m.id,
-              content: m.content,
-              role: m.role as 'user' | 'assistant',
-              timestamp: new Date(m.created_at)
-            }))
-            setMessages(formattedMessages)
+          console.log('🔵 ChatInterface: Found', messages.length, 'messages')
+          const formattedMessages = messages.map((m: any) => ({
+          id: m.id,
+          content: m.content,
+          role: m.role as 'user' | 'assistant',
+            timestamp: new Date(m.created_at)
+          }))
+          setMessages(formattedMessages)
+          console.log('🔵 ChatInterface: Messages set successfully')
           } else {
-            // No messages found, show a helpful message
-            setMessages([{
-              id: 'continue-' + Date.now(),
-              content: "I found your previous conversation, but it appears to be empty. Let's start fresh! What would you like to explore?",
-              role: 'assistant',
-              timestamp: new Date()
+          // No messages found, show a helpful message
+          console.log('🔵 ChatInterface: No messages found for conversation')
+          setMessages([{
+          id: 'continue-' + Date.now(),
+          content: "I found your previous conversation, but it appears to be empty. Let's start fresh! What would you like to explore?",
+          role: 'assistant',
+            timestamp: new Date()
             }])
-          }
+        }
           
           // Check if this conversation has an associated idea
           const { data: conv } = await supabase
