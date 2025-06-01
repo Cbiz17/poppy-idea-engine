@@ -120,9 +120,9 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
     negative: recentFeedback.filter(f => (f.feedback_value && f.feedback_value <= 2) || f.feedback_type === 'thumbs_down').length,
     avgRating: recentFeedback.length > 0 
       ? recentFeedback
-          .filter(f => f.feedback_value)
-          .reduce((sum, f) => sum + f.feedback_value, 0) / 
-        recentFeedback.filter(f => f.feedback_value).length || 0
+          .filter(f => f.feedback_value !== null && f.feedback_value !== undefined)
+          .reduce((sum, f) => sum + (f.feedback_value || 0), 0) / 
+        Math.max(recentFeedback.filter(f => f.feedback_value !== null && f.feedback_value !== undefined).length, 1)
       : 0
   }
   
