@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     // Use enhanced system message with learning patterns
     const anthropicStream = await anthropic.messages.stream({
         messages: filteredMessages,
-        model: 'claude-3-haiku-20240307',
+        model: process.env.ANTHROPIC_MODEL || 'claude-3-haiku-20240307',
         max_tokens: 2048,
         system: enhancedSystemMessage,
     });

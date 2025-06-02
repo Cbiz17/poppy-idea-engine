@@ -101,9 +101,9 @@ export function useChat({ user, conversationId }: UseChatProps) {
 
     setIsLoading(true)
     
-    // Create user message
+    // Create user message with proper UUID
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID ? crypto.randomUUID() : `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       content: content.trim(),
       role: 'user',
       timestamp: new Date()
@@ -111,8 +111,8 @@ export function useChat({ user, conversationId }: UseChatProps) {
     
     addMessage(userMessage)
 
-    // Create assistant placeholder
-    const assistantMessageId = (Date.now() + 1).toString()
+    // Create assistant placeholder with proper UUID
+    const assistantMessageId = crypto.randomUUID ? crypto.randomUUID() : `msg-${Date.now() + 1}-${Math.random().toString(36).substr(2, 9)}`
     const assistantPlaceholder: Message = {
       id: assistantMessageId,
       content: '',

@@ -1,47 +1,16 @@
 {
-  "name": "@poppy/browser-devtools-mcp",
+  "name": "mcp-browser-devtools",
   "version": "1.0.0",
-  "description": "Browser DevTools MCP Server for real-time debugging and monitoring",
+  "description": "MCP server for browser DevTools integration",
   "main": "index.js",
-  "type": "module",
-  "keywords": [
-    "mcp",
-    "browser",
-    "devtools",
-    "debugging",
-    "puppeteer",
-    "websocket",
-    "console-monitoring",
-    "network-analysis",
-    "performance-testing"
-  ],
   "scripts": {
     "start": "node index.js",
-    "dev": "node --inspect index.js",
-    "test": "echo \"Testing with MCP Inspector\" && npx @modelcontextprotocol/inspector node index.js",
-    "install-deps": "./install-deps.sh",
-    "clean": "rm -rf node_modules package-lock.json"
+    "dev": "nodemon index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "puppeteer": "^21.11.0",
-    "ws": "^8.14.2"
+    "ws": "^8.16.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/ws": "^8.5.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "bin": {
-    "browser-devtools-mcp": "./index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "private"
-  },
-  "author": "Christian Butler",
-  "license": "UNLICENSED",
-  "private": true
+    "nodemon": "^3.0.0"
+  }
 }

@@ -107,15 +107,16 @@ async function analyzeAndImprovePrompts(supabase: SupabaseClient) {
       lowRated: lowRatedResponses.length
     });
 
-    if (highRatedResponses.length < 3 && lowRatedResponses.length === 0) {  // Bootstrap mode
+    // Modified bootstrap logic - can work with only positive feedback initially
+    if (highRatedResponses.length < 3) {
       return NextResponse.json({ 
-        message: 'Not enough varied feedback yet. Need at least 3 high-rated responses AND some low-rated feedback for meaningful analysis.',
+        message: `Need at least 3 high-rated responses for analysis. Currently have ${highRatedResponses.length}.`,
         highRatedCount: highRatedResponses.length,
         lowRatedCount: lowRatedResponses.length,
-        suggestion: 'The system needs both positive and negative feedback to learn. Try different types of conversations and provide honest feedback - both thumbs up AND thumbs down when appropriate.',
+        suggestion: 'Continue providing feedback on AI responses. The system will learn from patterns in your positive feedback.',
         currentStats: {
           total: recentFeedback.length,
-          onlyPositive: lowRatedResponses.length === 0
+          needMore: 3 - highRatedResponses.length
         }
       });
     }
