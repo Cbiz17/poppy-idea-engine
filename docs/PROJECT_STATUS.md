@@ -9,174 +9,122 @@
 - **Database**: Supabase (PostgreSQL with vector extensions)
 - **AI Provider**: Anthropic Claude (Haiku model)
 
-## ✅ Completed Features (What's Working)
+## 📊 Current Metrics
 
-### 1. **Core Conversation System**
-- ✅ Real-time chat with Poppy AI
-- ✅ Full conversation history preservation
-- ✅ Message streaming for responsive feel
-- ✅ Conversation management (create, delete, continue)
+- **Total Users**: 4 (founders + test users)
+- **Conversations**: 56+ logged
+- **Ideas Saved**: 10+ (working with smart detection)
+- **Feedback Collected**: Limited (system needs user feedback!)
+- **A/B Tests**: Infrastructure ready, awaiting tests
 
-### 2. **Idea Management**
-- ✅ Save conversations as ideas
-- ✅ Ideas gallery with visual cards
-- ✅ Smart continuation detection
-- ✅ Version history tracking
-- ✅ Semantic search across ideas
+## ✅ What's Working in Production
 
-### 3. **A/B Testing System** *(NEW - Dec 2024)*
-- ✅ Complete A/B testing infrastructure for prompts
-- ✅ Dynamic prompt selection based on user assignment
-- ✅ Automatic user distribution (control/variant groups)
-- ✅ Real-time tracking of test impressions
-- ✅ Visual test management in admin panel
-- ✅ Test configuration (duration, sample size, traffic split)
+### Core Features
+- **Chat System**: Full conversation with AI, history preservation, streaming responses
+- **Ideas Management**: Save, edit, version tracking, gallery views, smart continuation
+- **Authentication**: Google OAuth with automatic profile creation
+- **Security**: Complete user data isolation with RLS policies
 
-### 4. **Analytics Dashboard** *(NEW - Dec 2024)*
-- ✅ Comprehensive prompt performance metrics
-- ✅ Time-based filtering (24h, 7d, 30d, all time)
-- ✅ Performance trends and comparisons
-- ✅ SQL functions for efficient data aggregation
-- ✅ API endpoint for analytics data (`/api/analytics/prompts`)
-- ✅ Visual charts and metrics display
+### Self-Improvement Infrastructure (Ready, Needs Data)
+- **Feedback Collection**: Thumbs up/down, 5-star ratings, contextual tags
+- **Admin Dashboard**: Real-time stats, learning patterns, user metrics
+- **A/B Testing**: Complete infrastructure for prompt optimization
+- **Analytics**: Performance metrics, trends, prompt effectiveness tracking
+- **Dynamic Prompts**: System ready for AI evolution based on feedback
 
-### 5. **World-Class Admin Interface** *(UPDATED - Dec 2024)*
-- ✅ Redesigned with clear visual hierarchy
-- ✅ Active prompt displayed as hero section
-- ✅ Tab navigation (Prompt Management | Analytics & Insights)
-- ✅ One-click "Test in Chat" functionality
-- ✅ Intuitive activate/deactivate controls
-- ✅ Real-time feedback statistics
-- ✅ Professional UI with smooth animations
+### Development Tools
+- **Browser DevTools MCP**: Real-time debugging with Puppeteer
+- **Enhanced Logging**: DevPanel component with database persistence
+- **Sentry Integration**: Error tracking configured
+- **Performance Monitoring**: Network and rendering metrics
 
-### 6. **Feedback System**
-- ✅ Thumbs up/down on messages
-- ✅ 5-star ratings
-- ✅ Contextual tags (helpful, creative, accurate)
-- ✅ Feedback drives prompt improvements
+## ⚠️ Partially Implemented
 
-### 7. **Authentication & Security**
-- ✅ Google OAuth integration
-- ✅ Row-level security (RLS) on all tables
-- ✅ Complete user data isolation
-
-## 🔄 In Progress / Partially Complete
-
-### 1. **Prompt-Conversation Tracking**
-- ⚠️ Need to update chat routes to store `prompt_id` in conversations table
-- ⚠️ This will link feedback to specific prompt versions for better analytics
-
-### 2. **Real-Time Prompt Indicator**
-- ✅ Component created (`PromptIndicator.tsx`)
-- ⚠️ Not yet integrated into chat interface
-- ⚠️ Will show users which prompt version they're using
-
-### 3. **Enhanced Logging**
-- ✅ DevPanel component created
-- ⚠️ Not integrated into main layout
-- ⚠️ Database schema for dev_logs not deployed
-
-## 📊 Database Schema Updates
-
-### Recent Additions (December 2024):
-```sql
--- Analytics support
-ALTER TABLE conversations ADD COLUMN prompt_id UUID;
-ALTER TABLE conversation_messages ADD COLUMN response_time_ms INTEGER;
-ALTER TABLE message_feedback ADD COLUMN feedback_tags TEXT[];
-
--- Analytics functions
-- get_prompt_performance_metrics()
-- get_prompt_daily_metrics()
-- get_top_feedback_tags()
-
--- A/B Testing enhancements
-- ab_test_results table
-- user_ab_preferences table
-- Enhanced ab_tests.test_config JSONB
-```
+1. **Prompt-Conversation Tracking**: Need to link conversations to prompt versions
+2. **Real-Time Prompt Indicator**: Component built but not integrated
+3. **Vector Search**: Disabled in production (no OpenAI key)
+4. **Sharing Features**: UI exists but not fully tested
 
 ## 🐛 Known Issues
 
 1. **TypeScript Compilation**: Always run `npm run build` before deploying
-2. **Feedback Tags**: Currently using placeholder tags, need UI for actual tag collection
-3. **Response Time Tracking**: Column exists but not populated yet
+2. **Feedback Tags**: Using placeholder tags, need actual UI implementation
+3. **Response Time Tracking**: Database column exists but not populated
+4. **Mobile Optimization**: Admin panel needs responsive design
 
-## 📝 Next Steps (Priority Order)
+## 📝 Next Steps
 
-### Immediate (This Week)
-1. **Update Chat Routes** to track prompt_id in conversations
-2. **Integrate PromptIndicator** component into chat interface
-3. **Add Response Time Tracking** to measure actual AI response times
-4. **Implement Feedback Tags UI** for users to categorize feedback
+### Immediate Priorities
+1. **Collect Feedback**: Encourage users to rate AI responses
+2. **Seed Dynamic Prompts**: Add initial prompt variations for testing
+3. **Track Prompt IDs**: Update chat routes to store prompt versions
+4. **Mobile Admin**: Make dashboard responsive
 
 ### Short Term (Next 2 Weeks)
-1. **Mobile Optimization** - Ensure admin panel works on mobile
-2. **Export Analytics** - Add CSV/PDF export for analytics data
-3. **Prompt Templates** - Pre-built prompts for common use cases
-4. **A/B Test Results** - Automatic winner declaration
+1. **Export Analytics**: CSV/PDF export for metrics
+2. **Prompt Templates**: Pre-built prompts for common scenarios
+3. **A/B Test Results**: Automatic winner selection
+4. **Feedback UI**: Better tag selection interface
 
 ### Medium Term (Next Month)
-1. **Spatial Organization** - Drag-and-drop idea arrangement
-2. **Advanced Search UI** - Visual search interface
-3. **Collaboration Features** - Share ideas with team members
-4. **API Documentation** - Public API for integrations
+1. **Spatial Organization**: Drag-and-drop idea arrangement
+2. **Advanced Search**: Visual semantic search interface
+3. **Collaboration**: Share specific ideas with team members
+4. **Integration APIs**: Documented endpoints for external tools
 
-## 🛠 Technical Debt
+## 🛠 Development Workflow
 
-1. **Error Handling**: Need comprehensive error boundaries
-2. **Loading States**: Skeleton screens for better UX
-3. **Test Coverage**: Add unit and integration tests
-4. **Performance**: Optimize vector search queries
-5. **Monitoring**: Add proper error tracking (Sentry configured but not fully utilized)
-
-## 📈 Metrics & Success Indicators
-
-### Current Stats:
-- **Conversations Logged**: 56+
-- **Ideas Saved**: 2+ (need to encourage more saves)
-- **Feedback Collected**: Limited (need to promote feedback UI)
-- **A/B Tests**: Infrastructure ready, awaiting test creation
-
-### Target Metrics:
-- 50%+ positive feedback rate
-- 10+ ideas saved per active user
-- 5+ feedback entries per conversation
-- Measurable improvement in prompt performance via A/B tests
-
-## 🔧 Development Workflow
-
-### Before Deploying:
-1. Run `npm run build` locally to check for TypeScript errors
-2. Test new features in development
-3. Commit with descriptive messages
-4. Push to main branch (auto-deploys to Vercel)
-
-### Common Commands:
+### Quick Start
 ```bash
-# Development
+# Clone and install
+git clone <repo-url>
+cd poppy-idea-engine
+npm install
+
+# Set up environment
+cp .env.example .env.local
+# Add your Supabase and Anthropic keys
+
+# Run locally
 npm run dev
 
-# Type checking
-npx tsc --noEmit
-
-# Build test
+# Build check before deploy
 npm run build
 
-# Deploy
-git add -A
-git commit -m "feat: Description"
+# Deploy (auto via Vercel on push to main)
 git push origin main
 ```
 
-## 🎯 Vision Alignment
+### Key Commands
+```bash
+# Check TypeScript
+npx tsc --noEmit
 
-Poppy is pioneering **transparent, user-controlled AI improvement**. Every feature should:
-1. Make AI adaptation visible to users
-2. Give users control over their AI experience
-3. Improve based on real user needs
-4. Maintain complete privacy and data isolation
+# Run MCP DevTools server
+cd mcp-servers/browser-devtools && npm start
+
+# Database queries (Supabase dashboard)
+SELECT COUNT(*) as ideas_count, user_id 
+FROM ideas 
+GROUP BY user_id;
+```
+
+## 📈 Success Criteria
+
+The platform succeeds when:
+1. ✅ Founders can develop and track Poppy ideas effectively
+2. ✅ AI learns and improves from feedback patterns
+3. ⏳ 50+ feedback entries show learning patterns
+4. ⏳ A/B tests demonstrate prompt improvements
+5. ⏳ User satisfaction metrics trend upward
+
+## 🔗 Related Documentation
+
+- [VISION.md](./VISION.md) - The larger Poppy household OS vision
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Technical decisions and future plans
+- [LEARNING_INSIGHTS.md](./LEARNING_INSIGHTS.md) - What we've learned so far
+- [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) - Detailed setup and development
 
 ---
 
-**For implementation details, see the main README.md and individual component documentation.**
+**Remember**: This is an internal R&D platform. We're learning how to build the future of AI-assisted family life management.
