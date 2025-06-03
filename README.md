@@ -39,7 +39,7 @@ These aren't just features - they're **research into the foundations Poppy will 
 
 ```bash
 # 1. Clone and install
-git clone <repo-url>
+git clone https://github.com/Cbiz17/poppy-idea-engine.git
 cd poppy-idea-engine
 npm install
 
