@@ -3,10 +3,16 @@
 import GoogleSignIn from '@/components/auth/GoogleSignIn'
 import EmailSignIn from '@/components/auth/EmailSignIn'
 import { Lightbulb, MessageCircle, Brain, Sparkles, Beaker, Users, Home as HomeIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Home() {
   const [authMethod, setAuthMethod] = useState<'email' | 'google'>('email')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Header */}
@@ -19,7 +25,7 @@ export default function Home() {
             <h1 className="text-xl font-bold text-gray-900">Poppy Idea Engine</h1>
           </div>
           <div className="text-sm text-gray-600">
-            Internal R&D Platform
+            Internal R&D Platform {mounted && '(Hydrated)'}
           </div>
         </div>
       </header>
@@ -65,7 +71,10 @@ export default function Home() {
               {/* Auth Method Toggle */}
               <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
                 <button
-                  onClick={() => setAuthMethod('email')}
+                  onClick={() => {
+                    console.log('Email clicked');
+                    setAuthMethod('email');
+                  }}
                   className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                     authMethod === 'email'
                       ? 'bg-white text-gray-900 shadow-sm'
@@ -75,7 +84,10 @@ export default function Home() {
                   Email
                 </button>
                 <button
-                  onClick={() => setAuthMethod('google')}
+                  onClick={() => {
+                    console.log('Google clicked');
+                    setAuthMethod('google');
+                  }}
                   className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                     authMethod === 'google'
                       ? 'bg-white text-gray-900 shadow-sm'
@@ -87,7 +99,9 @@ export default function Home() {
               </div>
               
               {/* Auth Components */}
-              {authMethod === 'email' ? <EmailSignIn /> : <GoogleSignIn />}
+              <div className="min-h-[200px]">
+                {authMethod === 'email' ? <EmailSignIn /> : <GoogleSignIn />}
+              </div>
             </div>
             
             <p className="text-sm text-gray-500 mt-6 text-center">
