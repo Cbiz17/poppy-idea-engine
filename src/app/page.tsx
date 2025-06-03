@@ -1,13 +1,19 @@
 'use client'
 
-import GoogleSignIn from '@/components/auth/GoogleSignIn'
-import EmailSignIn from '@/components/auth/EmailSignIn'
+import dynamic from 'next/dynamic'
 import { Lightbulb, MessageCircle, Brain, Sparkles, Beaker, Users } from 'lucide-react'
-import { useState } from 'react'
+
+// Dynamically import the auth section to avoid hydration issues
+const AuthSection = dynamic(() => import('@/components/AuthSection'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 max-w-md mx-auto">
+      <p className="text-sm text-gray-600 text-center">Loading...</p>
+    </div>
+  )
+})
 
 export default function Home() {
-  const [authMethod, setAuthMethod] = useState<'email' | 'google'>('email')
-  
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Header */}
@@ -57,38 +63,9 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Auth Section */}
+          {/* Auth Section - Client Side Only */}
           <div className="mb-16">
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 max-w-md mx-auto">
-              <p className="text-sm text-gray-600 mb-4">Team member? Sign in to continue your research:</p>
-              
-              {/* Auth Method Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
-                <button
-                  onClick={() => setAuthMethod('email')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                    authMethod === 'email'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Email
-                </button>
-                <button
-                  onClick={() => setAuthMethod('google')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                    authMethod === 'google'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Google
-                </button>
-              </div>
-              
-              {/* Auth Components */}
-              {authMethod === 'email' ? <EmailSignIn /> : <GoogleSignIn />}
-            </div>
+            <AuthSection />
             
             <p className="text-sm text-gray-500 mt-6 text-center">
               Internal platform. All research data is confidential and secure.
