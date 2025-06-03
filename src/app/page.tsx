@@ -2,7 +2,7 @@
 
 import GoogleSignIn from '@/components/auth/GoogleSignIn'
 import EmailSignIn from '@/components/auth/EmailSignIn'
-import { Lightbulb, MessageCircle, Brain, Sparkles, Beaker, Users, Home } from 'lucide-react'
+import { Lightbulb, MessageCircle, Brain, Sparkles, Beaker, Users, Home as HomeIcon } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Home() {
@@ -46,7 +46,7 @@ export default function Home() {
           {/* Vision Callout */}
           <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-xl p-6 mb-12 max-w-3xl mx-auto">
             <div className="flex items-center justify-center gap-3 mb-3">
-              <Home className="w-6 h-6 text-purple-600" />
+              <HomeIcon className="w-6 h-6 text-purple-600" />
               <h3 className="text-lg font-semibold text-gray-900">Building Toward Poppy OS</h3>
               <Users className="w-6 h-6 text-blue-600" />
             </div>
