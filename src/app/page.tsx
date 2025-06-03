@@ -7,65 +7,38 @@ import { useState, useEffect } from 'react'
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [debugInfo, setDebugInfo] = useState<string>('')
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
-    // Check if Supabase is properly initialized
-    const checkSupabase = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          setDebugInfo('Session exists, redirecting...')
-          router.push('/dashboard')
-        } else {
-          setDebugInfo('No session found')
-        }
-      } catch (err) {
-        setDebugInfo(`Session check error: ${err}`)
+    // Check if already logged in
+    const checkSession = async () => {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push('/dashboard')
       }
     }
-    checkSupabase()
-  }, [supabase, router])
+    checkSession()
+  }, [router])
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true)
       setError(null)
-      setDebugInfo('Starting Google sign in...')
       
-      // Check if we have the required environment variables
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-        throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
-      }
-      if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY')
-      }
-      
+      const supabase = createClient()
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
+          redirectTo: `https://poppy-idea-engine.vercel.app/auth/callback`
         }
       })
       
-      if (error) {
-        console.error('Google sign in error:', error)
-        setError(error.message)
-        setDebugInfo(`OAuth error: ${JSON.stringify(error)}`)
-      } else {
-        setDebugInfo(`OAuth initiated: ${JSON.stringify(data)}`)
-      }
+      if (error) throw error
+      
     } catch (err: any) {
-      console.error('Unexpected error:', err)
-      setError(err.message || 'Something went wrong. Please try again.')
-      setDebugInfo(`Catch error: ${err.message}`)
-    } finally {
+      console.error('Auth error:', err)
+      setError(err.message || 'Failed to sign in with Google')
       setIsLoading(false)
     }
   }
@@ -75,7 +48,7 @@ export default function Home() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Poppy Idea Engine</h1>
-          <p className="text-gray-600">Sign in to continue</p>
+          <p className="text-gray-600">Your AI-powered idea development platform</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -91,7 +64,7 @@ export default function Home() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             <span className="text-gray-700 font-medium">
-              {isLoading ? 'Signing in...' : 'Continue with Google'}
+              {isLoading ? 'Redirecting to Google...' : 'Continue with Google'}
             </span>
           </button>
 
@@ -100,24 +73,6 @@ export default function Home() {
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
-          
-          {debugInfo && (
-            <div className="mt-4 p-3 bg-gray-100 rounded-lg">
-              <p className="text-xs text-gray-600 font-mono">{debugInfo}</p>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 mb-2">Your AI-powered idea development platform</p>
-          <details className="text-xs text-gray-400">
-            <summary className="cursor-pointer">Debug Info</summary>
-            <div className="mt-2 text-left">
-              <p>URL: {process.env.NEXT_PUBLIC_SUPABASE_URL || 'NOT SET'}</p>
-              <p>Key: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET'}</p>
-              <p>Origin: {typeof window !== 'undefined' ? window.location.origin : 'SSR'}</p>
-            </div>
-          </details>
         </div>
       </div>
     </div>
