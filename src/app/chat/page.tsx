@@ -6,7 +6,6 @@ import { User } from '@supabase/supabase-js'
 import ChatInterface from '@/components/chat/ChatInterface'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { useRouter } from 'next/navigation'
-import AuthLayout from '@/components/layout/AuthLayout'
 
 export default function ChatPage() {
   const [user, setUser] = useState<User | null>(null)
@@ -16,15 +15,21 @@ export default function ChatPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/')
-      } else {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error || !user) {
+          console.error('Auth error:', error)
+          router.push('/')
+          return
+        }
+        
         setUser(user)
+        setLoading(false)
+      } catch (err) {
+        console.error('Error checking auth:', err)
+        router.push('/')
       }
-      
-      setLoading(false)
     }
 
     checkUser()
@@ -34,6 +39,7 @@ export default function ChatPage() {
         router.push('/')
       } else {
         setUser(session.user)
+        setLoading(false)
       }
     })
 
@@ -56,10 +62,8 @@ export default function ChatPage() {
   }
 
   return (
-    <AuthLayout>
-      <ErrorBoundary>
-        <ChatInterface user={user} />
-      </ErrorBoundary>
-    </AuthLayout>
+    <ErrorBoundary>
+      <ChatInterface user={user} />
+    </ErrorBoundary>
   )
 }
