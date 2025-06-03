@@ -1,28 +1,43 @@
 'use client'
 
 import { createClient } from '@/lib/supabase'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function GoogleSignIn() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [debugInfo, setDebugInfo] = useState<string>('')
   const supabase = createClient()
+
+  useEffect(() => {
+    // Log the current URL for debugging
+    setDebugInfo(`Current origin: ${window.location.origin}`)
+  }, [])
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true)
       setError(null)
       
+      console.log('Starting Google Sign In...')
+      setDebugInfo(prev => prev + '\nStarting Google Sign In...')
+      
       // First, sign out any existing session to ensure clean OAuth flow
       await supabase.auth.signOut()
+      console.log('Signed out existing session')
+      setDebugInfo(prev => prev + '\nSigned out existing session')
       
       // Small delay to ensure sign out completes
       await new Promise(resolve => setTimeout(resolve, 100))
       
+      const redirectTo = `${window.location.origin}/auth/callback`
+      console.log('Redirect URL:', redirectTo)
+      setDebugInfo(prev => prev + `\nRedirect URL: ${redirectTo}`)
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -31,21 +46,33 @@ export default function GoogleSignIn() {
       })
       
       if (error) {
-        console.error('Error signing in with Google:', error.message)
+        console.error('Error signing in with Google:', error)
         setError(error.message)
+        setDebugInfo(prev => prev + `\nError: ${error.message}`)
       } else {
         console.log('OAuth initiated successfully', data)
+        setDebugInfo(prev => prev + '\nOAuth initiated successfully')
+        // If we get here but no redirect happens, something is wrong
+        setTimeout(() => {
+          if (!window.location.href.includes('accounts.google.com')) {
+            setError('OAuth initiated but no redirect occurred. Check browser console.')
+            setDebugInfo(prev => prev + '\nWarning: No redirect occurred after 2 seconds')
+          }
+        }, 2000)
       }
     } catch (error) {
       console.error('Unexpected error:', error)
-      setError('An unexpected error occurred. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      setError(`Unexpected error: ${errorMessage}`)
+      setDebugInfo(prev => prev + `\nUnexpected error: ${errorMessage}`)
     } finally {
-      setIsLoading(false)
+      // Don't set loading to false immediately as we should be redirecting
+      setTimeout(() => setIsLoading(false), 3000)
     }
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-2">
       <button
         onClick={handleGoogleSignIn}
         disabled={isLoading}
@@ -74,12 +101,21 @@ export default function GoogleSignIn() {
           />
         </svg>
         <span className="text-gray-700 font-medium">
-          {isLoading ? 'Signing in...' : 'Continue with Google'}
+          {isLoading ? 'Processing...' : 'Continue with Google'}
         </span>
       </button>
       
       {error && (
-        <p className="mt-2 text-sm text-red-600 text-center">{error}</p>
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+      
+      {/* Debug information - remove in production */}
+      {(isLoading || debugInfo) && (
+        <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+          <p className="text-xs text-gray-600 font-mono whitespace-pre-wrap">{debugInfo}</p>
+        </div>
       )}
     </div>
   )
