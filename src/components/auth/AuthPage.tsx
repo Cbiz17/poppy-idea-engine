@@ -1,30 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import GoogleSignIn from './GoogleSignIn'
 import EmailSignIn from './EmailSignIn'
 import { Sparkles, Brain, Zap, Shield } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
 
 export default function AuthPage() {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [isChecking, setIsChecking] = useState(true)
-  const router = useRouter()
-  const supabase = createClient()
-
-  // Double-check auth state on client side
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        router.push('/chat')
-      } else {
-        setIsChecking(false)
-      }
-    }
-    checkAuth()
-  }, [supabase, router])
 
   const features = [
     {
@@ -48,20 +30,6 @@ export default function AuthPage() {
       description: "Your ideas are encrypted and completely private"
     }
   ]
-
-  // Show loading state while checking auth
-  if (isChecking) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center space-y-4 animate-fade-in">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl animate-pulse mx-auto flex items-center justify-center">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <p className="text-gray-600">Loading Poppy...</p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex">
@@ -185,6 +153,13 @@ export default function AuthPage() {
             {' '}and{' '}
             <a href="#" className="text-purple-600 hover:text-purple-700">Privacy Policy</a>
           </p>
+
+          {/* Debug link */}
+          <div className="text-center">
+            <a href="/test/auth" className="text-xs text-gray-400 hover:text-gray-600">
+              Having trouble? Test your auth status
+            </a>
+          </div>
         </div>
       </div>
     </div>
