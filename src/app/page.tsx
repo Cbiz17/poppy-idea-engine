@@ -2,33 +2,69 @@
 
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [debugInfo, setDebugInfo] = useState<string>('')
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    // Check if Supabase is properly initialized
+    const checkSupabase = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          setDebugInfo('Session exists, redirecting...')
+          router.push('/dashboard')
+        } else {
+          setDebugInfo('No session found')
+        }
+      } catch (err) {
+        setDebugInfo(`Session check error: ${err}`)
+      }
+    }
+    checkSupabase()
+  }, [supabase, router])
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true)
       setError(null)
+      setDebugInfo('Starting Google sign in...')
+      
+      // Check if we have the required environment variables
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
+      }
+      if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY')
+      }
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       })
       
       if (error) {
         console.error('Google sign in error:', error)
         setError(error.message)
+        setDebugInfo(`OAuth error: ${JSON.stringify(error)}`)
+      } else {
+        setDebugInfo(`OAuth initiated: ${JSON.stringify(data)}`)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Unexpected error:', err)
-      setError('Something went wrong. Please try again.')
+      setError(err.message || 'Something went wrong. Please try again.')
+      setDebugInfo(`Catch error: ${err.message}`)
     } finally {
       setIsLoading(false)
     }
@@ -64,10 +100,24 @@ export default function Home() {
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
+          
+          {debugInfo && (
+            <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+              <p className="text-xs text-gray-600 font-mono">{debugInfo}</p>
+            </div>
+          )}
         </div>
 
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>Your AI-powered idea development platform</p>
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-500 mb-2">Your AI-powered idea development platform</p>
+          <details className="text-xs text-gray-400">
+            <summary className="cursor-pointer">Debug Info</summary>
+            <div className="mt-2 text-left">
+              <p>URL: {process.env.NEXT_PUBLIC_SUPABASE_URL || 'NOT SET'}</p>
+              <p>Key: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET'}</p>
+              <p>Origin: {typeof window !== 'undefined' ? window.location.origin : 'SSR'}</p>
+            </div>
+          </details>
         </div>
       </div>
     </div>
