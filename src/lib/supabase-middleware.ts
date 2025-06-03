@@ -1,9 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
-import { Database } from '@/types/database.types'
 
 export function createMiddlewareSupabaseClient(request: NextRequest, response: NextResponse) {
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
