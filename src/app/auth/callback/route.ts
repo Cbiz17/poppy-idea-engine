@@ -96,14 +96,16 @@ export async function GET(request: NextRequest) {
       // Ensure cookies are properly set in the response
       cookieStore.getAll().forEach((cookie) => {
         if (cookie.name.startsWith('sb-')) {
-          response.cookies.set({
-            name: cookie.name,
-            value: cookie.value,
-            ...cookie,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            httpOnly: true
-          })
+          response.cookies.set(
+            cookie.name,
+            cookie.value,
+            {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              path: '/'
+            }
+          )
         }
       })
 
@@ -116,14 +118,16 @@ export async function GET(request: NextRequest) {
       // Ensure cookies are set
       cookieStore.getAll().forEach((cookie) => {
         if (cookie.name.startsWith('sb-')) {
-          response.cookies.set({
-            name: cookie.name,
-            value: cookie.value,
-            ...cookie,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            httpOnly: true
-          })
+          response.cookies.set(
+            cookie.name,
+            cookie.value,
+            {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              path: '/'
+            }
+          )
         }
       })
 
