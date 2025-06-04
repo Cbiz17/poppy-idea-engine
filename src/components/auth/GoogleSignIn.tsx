@@ -1,67 +1,60 @@
 'use client'
 
-import { createClient } from '@/lib/supabase'
 import { useState } from 'react'
 
 export default function GoogleSignIn() {
   const [isLoading, setIsLoading] = useState(false)
-  const [debugInfo, setDebugInfo] = useState<string[]>([])
+  const [error, setError] = useState<string | null>(null)
   
   const handleGoogleSignIn = async () => {
-    const debug: string[] = []
+    console.log('Google sign-in clicked!')
+    setError(null)
     
     try {
       setIsLoading(true)
-      setDebugInfo([])
       
-      // Check environment variables
-      debug.push(`SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET'}`)
-      debug.push(`SUPABASE_KEY: ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET'}`)
-      debug.push(`Window Origin: ${window.location.origin}`)
+      // Direct import to ensure it works
+      const { createBrowserClient } = await import('@supabase/ssr')
       
-      // Try to create client
-      const supabase = createClient()
-      debug.push('Supabase client created')
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       
-      // Check if client has auth property
-      if (!supabase.auth) {
-        debug.push('ERROR: Supabase client missing auth property')
-        setDebugInfo(debug)
+      if (!supabaseUrl || !supabaseKey) {
+        setError('Missing configuration. Please check environment variables.')
+        console.error('Missing env vars:', { supabaseUrl: !!supabaseUrl, supabaseKey: !!supabaseKey })
         return
       }
       
-      debug.push('Calling signInWithOAuth...')
+      console.log('Creating Supabase client...')
+      const supabase = createBrowserClient(supabaseUrl, supabaseKey)
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      console.log('Initiating OAuth...')
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       })
       
-      if (error) {
-        debug.push(`OAuth Error: ${error.message}`)
-        console.error('Error signing in with Google:', error)
-      } else {
-        debug.push('OAuth call successful')
-        debug.push(`URL: ${data?.url ? 'Generated' : 'NOT Generated'}`)
-        debug.push(`Provider: ${data?.provider || 'Unknown'}`)
-        
-        // If we get here but no redirect, something is wrong
-        if (data?.url) {
-          debug.push(`Redirect URL: ${data.url}`)
-          // Force redirect if it didn't happen automatically
-          window.location.href = data.url
-        } else {
-          debug.push('ERROR: No redirect URL generated')
-        }
+      if (oauthError) {
+        console.error('OAuth error:', oauthError)
+        setError(oauthError.message)
+        return
       }
       
-      setDebugInfo(debug)
-    } catch (error) {
-      debug.push(`Exception: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      console.error('Unexpected error:', error)
-      setDebugInfo(debug)
+      if (!data?.url) {
+        console.error('No redirect URL generated')
+        setError('Failed to generate authentication URL')
+        return
+      }
+      
+      console.log('Redirecting to Google...')
+      // This should trigger the redirect
+      window.location.href = data.url
+      
+    } catch (err) {
+      console.error('Unexpected error:', err)
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -70,12 +63,13 @@ export default function GoogleSignIn() {
   return (
     <div className="w-full space-y-2">
       <button
+        type="button"
         onClick={handleGoogleSignIn}
         disabled={isLoading}
-        className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+        className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         <svg
-          className="w-5 h-5"
+          className="w-5 h-5 flex-shrink-0"
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -97,18 +91,25 @@ export default function GoogleSignIn() {
           />
         </svg>
         <span className="text-gray-700 font-medium">
-          {isLoading ? 'Processing...' : 'Continue with Google'}
+          {isLoading ? 'Connecting...' : 'Continue with Google'}
         </span>
       </button>
       
-      {debugInfo.length > 0 && (
-        <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
-          <p className="text-xs font-semibold text-gray-700 mb-1">Debug Info:</p>
-          {debugInfo.map((info, index) => (
-            <p key={index} className="text-xs text-gray-600 font-mono">{info}</p>
-          ))}
+      {error && (
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+          <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
+      
+      {/* Emergency fallback - direct link to diagnostics */}
+      <div className="text-center">
+        <a 
+          href="/test/prod-diagnostics" 
+          className="text-xs text-blue-600 hover:text-blue-800 underline"
+        >
+          Run diagnostics
+        </a>
+      </div>
     </div>
   )
 }
