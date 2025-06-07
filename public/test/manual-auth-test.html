@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Auth Test - Poppy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #0051cc; }
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manual Authentication Test</h1>
+        <p>This page tests authentication directly without React/Next.js hydration.</p>
+        
+        <div class="test-section">
+            <h2>1. Environment Check</h2>
+            <button onclick="checkEnvironment()">Check Environment Variables</button>
+            <div id="env-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Supabase Connection Test</h2>
+            <button onclick="testSupabaseConnection()">Test Supabase Connection</button>
+            <div id="supabase-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. OAuth URL Generation</h2>
+            <button onclick="generateOAuthURL()">Generate OAuth URL</button>
+            <div id="oauth-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Manual OAuth Login</h2>
+            <button onclick="manualOAuthLogin()" id="login-btn">Start Google OAuth Login</button>
+            <div id="login-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Current Session Check</h2>
+            <button onclick="checkSession()">Check Current Session</button>
+            <div id="session-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>6. API Health Check</h2>
+            <button onclick="checkAPIHealth()">Check API Health</button>
+            <div id="api-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Helper function to display results
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}"><pre>${JSON.stringify(content, null, 2)}</pre></div>`;
+        }
+
+        // 1. Check environment variables via API
+        async function checkEnvironment() {
+            try {
+                const response = await fetch('/api/check-env');
+                const data = await response.json();
+                showResult('env-result', data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                showResult('env-result', { error: error.message }, 'error');
+            }
+        }
+
+        // 2. Test Supabase connection
+        async function testSupabaseConnection() {
+            try {
+                // First check if Supabase client can be created
+                const supabaseUrl = 'https://eaahmigctnbqhaqptlvw.supabase.co';
+                const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhYWhtaWdjdG5icWhhcXB0bHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI5NzA0NDIsImV4cCI6MjA0ODU0NjQ0Mn0.U8nwQ52wTPiAtaDu83OeFxTZa8-1cUCCHVdqJnKiROs';
+                
+                // Test with fetch directly
+                const testResponse = await fetch(`${supabaseUrl}/rest/v1/`, {
+                    headers: {
+                        'apikey': supabaseAnonKey,
+                        'Authorization': `Bearer ${supabaseAnonKey}`
+                    }
+                });
+                
+                showResult('supabase-result', {
+                    status: testResponse.status,
+                    statusText: testResponse.statusText,
+                    url: supabaseUrl,
+                    keyLength: supabaseAnonKey.length,
+                    headers: testResponse.headers
+                }, testResponse.ok ? 'success' : 'warning');
+            } catch (error) {
+                showResult('supabase-result', { error: error.message }, 'error');
+            }
+        }
+
+        // 3. Generate OAuth URL
+        function generateOAuthURL() {
+            try {
+                const redirectUrl = `${window.location.origin}/auth/callback`;
+                const supabaseUrl = 'https://eaahmigctnbqhaqptlvw.supabase.co';
+                
+                const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
+                
+                showResult('oauth-result', {
+                    generatedUrl: oauthUrl,
+                    redirectUrl: redirectUrl,
+                    origin: window.location.origin
+                }, 'success');
+            } catch (error) {
+                showResult('oauth-result', { error: error.message }, 'error');
+            }
+        }
+
+        // 4. Manual OAuth login
+        function manualOAuthLogin() {
+            try {
+                const btn = document.getElementById('login-btn');
+                btn.disabled = true;
+                btn.textContent = 'Redirecting...';
+                
+                const redirectUrl = `${window.location.origin}/auth/callback`;
+                const supabaseUrl = 'https://eaahmigctnbqhaqptlvw.supabase.co';
+                const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
+                
+                showResult('login-result', {
+                    message: 'Redirecting to Google OAuth...',
+                    url: oauthUrl
+                }, 'info');
+                
+                // Redirect after showing the URL
+                setTimeout(() => {
+                    window.location.href = oauthUrl;
+                }, 1000);
+            } catch (error) {
+                showResult('login-result', { error: error.message }, 'error');
+                document.getElementById('login-btn').disabled = false;
+                document.getElementById('login-btn').textContent = 'Start Google OAuth Login';
+            }
+        }
+
+        // 5. Check current session
+        async function checkSession() {
+            try {
+                // Check via API
+                const response = await fetch('/api/auth/session');
+                const data = await response.json();
+                
+                // Also check cookies
+                const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+                    const [key, value] = cookie.trim().split('=');
+                    if (key) acc[key] = value;
+                    return acc;
+                }, {});
+                
+                showResult('session-result', {
+                    apiResponse: data,
+                    cookies: cookies,
+                    hasAuthCookie: !!cookies['sb-auth-token'] || !!cookies['sb-eaahmigctnbqhaqptlvw-auth-token']
+                }, data.user ? 'success' : 'warning');
+            } catch (error) {
+                showResult('session-result', { error: error.message }, 'error');
+            }
+        }
+
+        // 6. Check API health
+        async function checkAPIHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                showResult('api-result', data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                showResult('api-result', { error: error.message }, 'error');
+            }
+        }
+
+        // Auto-check on page load
+        window.addEventListener('load', () => {
+            console.log('Manual auth test page loaded');
+            // Check if we're coming back from OAuth
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('code') || urlParams.has('error')) {
+                showResult('login-result', {
+                    message: 'OAuth callback detected',
+                    params: Object.fromEntries(urlParams)
+                }, urlParams.has('error') ? 'error' : 'success');
+            }
+        });
+    </script>
+</body>
+</html>

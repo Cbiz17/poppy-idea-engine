@@ -2,19 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { DevButton } from "@/components/dev/DevPanel";
+import { DevToolsInitializer } from "@/components/dev/DevToolsInitializer";
 import { ErrorBoundary } from "@/lib/monitoring/error-boundary";
-import '@/lib/suppress-devtools-errors';
-
-// Initialize monitoring tools in development
-if (process.env.NODE_ENV === 'development') {
-  if (typeof window !== 'undefined') {
-    import('@/lib/monitoring/network');
-    import('@/lib/monitoring/performance');
-    import('@/lib/monitoring/browser-devtools').then(({ initBrowserDevTools }) => {
-      initBrowserDevTools();
-    });
-  }
-}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,8 +31,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ErrorBoundary>
+          <DevToolsInitializer />
           {children}
-          <DevButton />
+          {process.env.NODE_ENV === 'development' && <DevButton />}
         </ErrorBoundary>
       </body>
     </html>

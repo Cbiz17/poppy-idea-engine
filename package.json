@@ -19,10 +19,10 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "next build --no-lint",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --incremental false",
     "mcp:browser-devtools": "cd mcp-servers/browser-devtools && node index.js",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org your-org --project your-project ./build"
   },
