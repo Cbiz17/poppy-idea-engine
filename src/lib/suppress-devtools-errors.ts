@@ -18,3 +18,6 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     originalError.apply(console, args);
   };
 }
+
+// Export an empty object to make it a module
+export {};
