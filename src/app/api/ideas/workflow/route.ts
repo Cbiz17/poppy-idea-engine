@@ -48,7 +48,7 @@ export async function POST(req: Request) {
         new_title: currentIdea.title,
         previous_content: currentIdea.content,
         new_content: initialContent || currentIdea.content,
-        development_type: 'branch_creation',
+        development_type: 'branch',
         change_summary: `Created new branch: ${branchName}`,
         branch_name: branchName,
         version_number: newVersionNumber,
