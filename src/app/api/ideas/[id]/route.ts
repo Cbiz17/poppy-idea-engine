@@ -1,5 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { generateIdeaEmbedding } from '@/lib/embeddings';
+
+// Input validation
+function validateIdeaUpdate(input: any): { valid: boolean; error?: string } {
+  if (!input.title || typeof input.title !== 'string' || input.title.length > 200) {
+    return { valid: false, error: 'Title is required and must be less than 200 characters' };
+  }
+  if (!input.content || typeof input.content !== 'string' || input.content.length > 50000) {
+    return { valid: false, error: 'Content is required and must be less than 50000 characters' };
+  }
+  if (!input.category || typeof input.category !== 'string') {
+    return { valid: false, error: 'Category is required' };
+  }
+  return { valid: true };
+}
 
 export async function PATCH(
   req: Request,
@@ -7,7 +22,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const { title, content, category, conversationId, developmentType, metadata } = await req.json();
+    const body = await req.json();
     const supabase = await createServerSupabaseClient();
     
     // Get the current user
@@ -18,9 +33,12 @@ export async function PATCH(
     }
 
     // Validate input
-    if (!title || !content || !category) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const validation = validateIdeaUpdate(body);
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
+
+    const { title, content, category, conversationId, developmentType, metadata } = body;
 
     // Check if the idea exists and belongs to the user
     const { data: existingIdea, error: fetchError } = await supabase
@@ -38,22 +56,7 @@ export async function PATCH(
     }
 
     // Generate new embedding for updated content
-    let embedding = null;
-    try {
-      const embedResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3001'}/api/embed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: content }),
-      });
-
-      if (embedResponse.ok) {
-        const embedData = await embedResponse.json();
-        embedding = embedData.embedding;
-      }
-    } catch (embedError) {
-      console.error('Error generating embedding:', embedError);
-      // Continue without embedding update
-    }
+    const embedding = await generateIdeaEmbedding(title, content);
 
     // Update the idea
     interface UpdateData {
@@ -65,9 +68,9 @@ export async function PATCH(
     }
     
     const updateData: UpdateData = {
-      title,
-      content,
-      category,
+      title: title.trim(),
+      content: content.trim(),
+      category: category.trim(),
       updated_at: new Date().toISOString()
     };
 
@@ -85,31 +88,6 @@ export async function PATCH(
     if (updateError) {
       console.error('Error updating idea:', updateError);
       return NextResponse.json({ error: 'Failed to update idea' }, { status: 500 });
-    }
-
-    // Add contributor tracking for edits
-    if (existingIdea.user_id !== user.id) {
-      // If the editor is not the original owner, track them as a contributor
-      try {
-        await supabase
-          .from('idea_contributors')
-          .upsert({
-            idea_id: id,
-            user_id: user.id,
-            contribution_type: 'edit',
-            contributed_at: new Date().toISOString(),
-            contribution_details: {
-              previousTitle: existingIdea.title,
-              previousContent: existingIdea.content,
-              timestamp: new Date().toISOString()
-            }
-          }, {
-            onConflict: 'idea_id,user_id,contribution_type'
-          });
-      } catch (contributorError) {
-        console.error('Error tracking contributor:', contributorError);
-        // Non-critical, continue
-      }
     }
 
     // Enhanced history tracking with conversation context
@@ -140,9 +118,9 @@ export async function PATCH(
       };
 
       const newVersion = {
-        title,
-        content,
-        category,
+        title: title.trim(),
+        content: content.trim(),
+        category: category.trim(),
         timestamp: new Date().toISOString()
       };
 
@@ -211,7 +189,7 @@ function determineDevelopmentType(oldIdea: IdeaData, newIdea: IdeaData): string 
   } else if (contentChanged || titleChanged) {
     return 'refinement';
   } else if (categoryChanged) {
-    return 'categorization_change';
+    return 'refinement'; // categorization_change isn't in the enum
   } else {
     return 'refinement';
   }
@@ -248,7 +226,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const { title, content, category, saveType, originalId } = await req.json();
+    const body = await req.json();
     const supabase = await createServerSupabaseClient();
     
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -258,35 +236,24 @@ export async function POST(
     }
 
     // Validate input
-    if (!title || !content || !category) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const validation = validateIdeaUpdate(body);
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
+
+    const { title, content, category, saveType, originalId } = body;
 
     // Generate embedding
-    let embedding = null;
-    try {
-      const embedResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3001'}/api/embed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: content }),
-      });
-
-      if (embedResponse.ok) {
-        const embedData = await embedResponse.json();
-        embedding = embedData.embedding;
-      }
-    } catch (embedError) {
-      console.error('Error generating embedding:', embedError);
-    }
+    const embedding = await generateIdeaEmbedding(title, content);
 
     // Create new idea
     const { data: newIdea, error: createError } = await supabase
       .from('ideas')
       .insert({
         user_id: user.id,
-        title,
-        content,
-        category,
+        title: title.trim(),
+        content: content.trim(),
+        category: category.trim(),
         embedding
       })
       .select()
@@ -301,9 +268,9 @@ export async function POST(
     if (saveType === 'new' && originalId) {
       try {
         const newVersion = {
-          title,
-          content,
-          category,
+          title: title.trim(),
+          content: content.trim(),
+          category: category.trim(),
           timestamp: new Date().toISOString()
         };
 
@@ -314,7 +281,7 @@ export async function POST(
             user_id: user.id,
             previous_version: {},
             new_version: newVersion,
-            development_type: 'new_variation',
+            development_type: 'refinement', // 'new_variation' isn't in the enum
             change_summary: `Created as a variation of existing idea`,
             ai_confidence_score: 1.0
           });
@@ -360,6 +327,51 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching idea:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const supabase = await createServerSupabaseClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if idea exists and belongs to user
+    const { data: idea, error: fetchError } = await supabase
+      .from('ideas')
+      .select('id')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (fetchError || !idea) {
+      return NextResponse.json({ error: 'Idea not found' }, { status: 404 });
+    }
+
+    // Delete the idea (cascades should handle related records)
+    const { error: deleteError } = await supabase
+      .from('ideas')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('Error deleting idea:', deleteError);
+      return NextResponse.json({ error: 'Failed to delete idea' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error('Error deleting idea:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
