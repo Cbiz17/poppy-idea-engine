@@ -1,28 +1,38 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
-import OpenAI from 'openai';
+import { generateIdeaEmbedding } from '@/lib/embeddings';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Input validation
+interface CreateIdeaInput {
+  title: string;
+  content: string;
+  category: string;
+  conversationId?: string;
+  continuationContext?: any;
+  originalIdeaId?: string;
+  branchedFromId?: string;
+  branchNote?: string;
+  isBranch?: boolean;
+  saveType?: string;
+  metadata?: any;
+}
 
-const EMBEDDING_MODEL = 'text-embedding-ada-002';
+function validateIdeaInput(input: any): { valid: boolean; error?: string } {
+  if (!input.title || typeof input.title !== 'string' || input.title.length > 200) {
+    return { valid: false, error: 'Title is required and must be less than 200 characters' };
+  }
+  if (!input.content || typeof input.content !== 'string' || input.content.length > 50000) {
+    return { valid: false, error: 'Content is required and must be less than 50000 characters' };
+  }
+  if (!input.category || typeof input.category !== 'string') {
+    return { valid: false, error: 'Category is required' };
+  }
+  return { valid: true };
+}
 
 export async function POST(req: Request) {
   try {
-    const {
-      title,
-      content,
-      category,
-      conversationId,
-      continuationContext,
-      originalIdeaId,
-      branchedFromId,
-      branchNote,
-      isBranch,
-      saveType,
-      metadata
-    } = await req.json();
+    const body = await req.json() as CreateIdeaInput;
     
     const supabase = await createServerSupabaseClient();
     
@@ -34,33 +44,31 @@ export async function POST(req: Request) {
     }
     
     // Validate input
-    if (!title || !content || !category) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const validation = validateIdeaInput(body);
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
     
-    // Generate embedding
-    let embedding = null;
-    try {
-      if (process.env.OPENAI_API_KEY) {
-        const inputText = `${title} ${content}`.replace(/\n/g, ' ');
-        
-        const embeddingResponse = await openai.embeddings.create({
-          model: EMBEDDING_MODEL,
-          input: inputText,
-        });
-        
-        embedding = embeddingResponse?.data?.[0]?.embedding;
-      }
-    } catch (embedError) {
-      console.error('Error generating embedding:', embedError);
-      // Continue without embedding
-    }
-    
-    const ideaData: any = {
-      user_id: user.id,
+    const {
       title,
       content,
       category,
+      conversationId,
+      continuationContext,
+      branchedFromId,
+      branchNote,
+      isBranch,
+      metadata
+    } = body;
+    
+    // Generate embedding
+    const embedding = await generateIdeaEmbedding(title, content);
+    
+    const ideaData: any = {
+      user_id: user.id,
+      title: title.trim(),
+      content: content.trim(),
+      category: category.trim(),
       embedding,
       development_count: isBranch ? 1 : 0
     }
@@ -168,7 +176,19 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // Get ideas with branch count
+    // Add pagination support
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100); // Max 100 per page
+    const offset = (page - 1) * limit;
+    
+    // Get total count
+    const { count } = await supabase
+      .from('ideas')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    
+    // Get paginated ideas with branch count
     const { data: ideas, error } = await supabase
       .from('ideas')
       .select(`
@@ -176,7 +196,8 @@ export async function GET(req: Request) {
         branches:ideas!branched_from_id(id, title)
       `)
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
       
     if (error) {
       console.error('Error fetching ideas:', error);
@@ -189,7 +210,15 @@ export async function GET(req: Request) {
       branches: idea.branches || []
     })) || [];
     
-    return NextResponse.json({ ideas: processedIdeas });
+    return NextResponse.json({ 
+      ideas: processedIdeas,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    });
     
   } catch (error) {
     console.error('Error:', error);
