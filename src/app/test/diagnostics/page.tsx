@@ -17,7 +17,7 @@ export default function DiagnosticsPage() {
     
     // Check if Supabase client can be created
     let supabaseStatus = 'Not tested'
-    let supabaseError = null
+    let supabaseError: string | null = null  // Fixed: explicitly typed
     
     try {
       if (isBrowser) {
