@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manual Auth Test</title>
+</head>
+<body>
+    <h1>Manual Authentication Test</h1>
+    <p>If you can see this and click the button below, basic HTML/JS works.</p>
+    
+    <button onclick="testAuth()" style="padding: 10px 20px; background: blue; color: white; border: none; cursor: pointer;">
+        Test Google Sign In
+    </button>
+    
+    <div id="output" style="margin-top: 20px; padding: 20px; background: #f0f0f0;">
+        <p>Results will appear here...</p>
+    </div>
+
+    <script>
+        function testAuth() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const supabaseUrl = 'https://eaahmigctnbqhaqptlvw.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhYWhtaWdjdG5icWhhcXB0bHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzMTM2ODcsImV4cCI6MjA2Mzg4OTY4N30.UeF2RuAiZ5R8hUZVzashUqbbZof8B9kd5V7zJ-AvUao';
+                
+                // Build OAuth URL manually
+                const redirectTo = window.location.origin + '/auth/callback';
+                const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+                
+                output.innerHTML = `
+                    <p><strong>Supabase URL:</strong> ${supabaseUrl}</p>
+                    <p><strong>Redirect URL:</strong> ${redirectTo}</p>
+                    <p><strong>OAuth URL:</strong> ${oauthUrl}</p>
+                    <p><a href="${oauthUrl}" style="color: blue; text-decoration: underline;">Click here to sign in with Google</a></p>
+                `;
+                
+                // Optionally, auto-redirect
+                // window.location.href = oauthUrl;
+                
+            } catch (error) {
+                output.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
