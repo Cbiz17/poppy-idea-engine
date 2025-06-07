@@ -2,8 +2,25 @@
 
 import { useEffect, useState } from 'react'
 
+interface DiagnosticsState {
+  isBrowser?: boolean
+  envVars?: {
+    NEXT_PUBLIC_SUPABASE_URL?: string
+    NEXT_PUBLIC_SUPABASE_ANON_KEY?: string
+  }
+  windowLocation?: string
+  origin?: string
+  supabaseStatus?: string
+  supabaseError?: string | null
+  timestamp?: string
+  authCheck?: {
+    user: string
+    error: string
+  }
+}
+
 export default function DiagnosticsPage() {
-  const [diagnostics, setDiagnostics] = useState<any>({})
+  const [diagnostics, setDiagnostics] = useState<DiagnosticsState>({})
   
   useEffect(() => {
     // Check if we're in the browser
@@ -17,7 +34,7 @@ export default function DiagnosticsPage() {
     
     // Check if Supabase client can be created
     let supabaseStatus = 'Not tested'
-    let supabaseError: string | null = null  // Fixed: explicitly typed
+    let supabaseError: string | null = null
     
     try {
       if (isBrowser) {
@@ -32,7 +49,7 @@ export default function DiagnosticsPage() {
             
             // Try to check auth
             client.auth.getUser().then(({ data, error }) => {
-              setDiagnostics(prev => ({
+              setDiagnostics((prev: DiagnosticsState) => ({
                 ...prev,
                 authCheck: {
                   user: data?.user?.email || 'No user',
@@ -45,13 +62,13 @@ export default function DiagnosticsPage() {
             supabaseError = e.message
           }
           
-          setDiagnostics(prev => ({
+          setDiagnostics((prev: DiagnosticsState) => ({
             ...prev,
             supabaseStatus,
             supabaseError
           }))
         }).catch(e => {
-          setDiagnostics(prev => ({
+          setDiagnostics((prev: DiagnosticsState) => ({
             ...prev,
             supabaseStatus: 'Failed to import @supabase/ssr',
             supabaseError: e.message
