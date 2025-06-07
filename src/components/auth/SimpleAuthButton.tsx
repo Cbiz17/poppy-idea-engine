@@ -1,6 +1,6 @@
 'use client';
 
-import { createBrowserSupabaseClient } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase';
 import { useState } from 'react';
 
 export function SimpleAuthButton() {
@@ -12,7 +12,7 @@ export function SimpleAuthButton() {
       setLoading(true);
       setError(null);
       
-      const supabase = createBrowserSupabaseClient();
+      const supabase = createClient();
       const redirectUrl = `${window.location.origin}/auth/callback`;
       
       const { error } = await supabase.auth.signInWithOAuth({
