@@ -37,4 +37,8 @@ When working locally, the project is located at:
 - This is a public repository
 - All pushes to main branch automatically deploy to Vercel
 - The repository owner is `Cbiz17`, not `gaborcselle` or other variations
+<<<<<<< HEAD
 - Always check the `.git/config` file if unsure about repository details
+=======
+- Always check the `.git/config` file if unsure about repository details
+>>>>>>> ea4f046fef620df2207ed2aed3f6d737c8e54a7d
