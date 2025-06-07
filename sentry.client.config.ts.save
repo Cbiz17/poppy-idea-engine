@@ -1,0 +1,53 @@
+// Integrations
+integrations: [
+  // Automatically instrument React components
+  // Sentry.replayIntegration({
+  //   maskAllText: false,
+  //   blockAllMedia: false,
+  // }),
+],// This file configures the initialization of Sentry on the client.
+// The config you add here will be used whenever a users loads a page in their browser.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.init({
+  dsn: "https://bbf2b3c892410ae14c8c2e92a763ed2e@o4509398706487296.ingest.us.sentry.io/4509398706618368",
+
+  // Adjust this value in production, or use tracesSampler for greater control
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+
+  // Setting this option to true will print useful information to the console while you're setting up Sentry.
+  debug: false,
+
+  // Replay configuration
+  replaysOnErrorSampleRate: 1.0, // Capture 100% of sessions with errors
+  replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0.5, // Capture 10% of all sessions in production
+
+  // Additional options
+  environment: process.env.NODE_ENV,
+  
+  // Integrations
+  integrations: [
+    // Automatically instrument React components
+    Sentry.replayIntegration({
+      maskAllText: false,
+      blockAllMedia: false,
+    }),
+  ],
+
+  // Before send hook to filter out certain errors
+  beforeSend(event, hint) {
+    // Filter out network errors that are expected
+    if (event.exception?.values?.[0]?.type === 'NetworkError') {
+      return null;
+    }
+    
+    // Filter out errors from browser extensions
+    if (event.exception?.values?.[0]?.value?.includes('extension://')) {
+      return null;
+    }
+    
+    return event;
+  },
+});

@@ -14,7 +14,9 @@ export function rateLimit(config: RateLimitConfig) {
 
   return async function rateLimitMiddleware(req: NextRequest) {
     // Get client identifier (IP or user ID)
-    const identifier = req.ip || req.headers.get('x-forwarded-for') || 'anonymous';
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    const realIp = req.headers.get('x-real-ip');
+    const identifier = forwardedFor || realIp || 'anonymous';
     const now = Date.now();
 
     // Get or create request count entry

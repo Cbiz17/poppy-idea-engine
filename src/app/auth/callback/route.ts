@@ -2,38 +2,56 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
+  console.log('Auth callback triggered')
+  
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  // if "next" is in param, use it as the redirect URL
+  const error = searchParams.get('error')
+  const error_description = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/dashboard'
 
+  console.log('Auth callback params:', { code: !!code, error, error_description, next })
+
+  // Check for OAuth errors
+  if (error) {
+    console.error('OAuth error:', error, error_description)
+    const errorUrl = new URL(`${origin}/auth/auth-code-error`)
+    errorUrl.searchParams.set('error', error)
+    if (error_description) {
+      errorUrl.searchParams.set('description', error_description)
+    }
+    return NextResponse.redirect(errorUrl)
+  }
+
   if (code) {
-    const supabase = await createServerSupabaseClient()
-    const { error, data } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error && data?.user) {
-      // Check if user needs onboarding
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', data.user.id)
-        .single()
+    try {
+      const supabase = await createServerSupabaseClient()
+      const { error: exchangeError, data } = await supabase.auth.exchangeCodeForSession(code)
       
-      const needsOnboarding = !profile?.onboarding_completed
-      const redirectPath = needsOnboarding ? '/onboarding' : next
+      console.log('Code exchange result:', { error: exchangeError, hasData: !!data })
       
-      const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-      if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
+      if (!exchangeError && data?.user) {
+        // Check if user needs onboarding
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', data.user.id)
+          .single()
+        
+        const needsOnboarding = !profile?.onboarding_completed
+        const redirectPath = needsOnboarding ? '/onboarding' : next
+        
+        console.log('Redirecting to:', redirectPath)
         return NextResponse.redirect(`${origin}${redirectPath}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${redirectPath}`)
       } else {
-        return NextResponse.redirect(`${origin}${redirectPath}`)
+        console.error('Exchange error:', exchangeError)
       }
+    } catch (err) {
+      console.error('Callback error:', err)
     }
   }
 
-  // return the user to an error page with instructions
+  // Return the user to an error page with instructions
+  console.log('No code or error, redirecting to error page')
   return NextResponse.redirect(`${origin}/auth/auth-code-error`)
-} 
+}
