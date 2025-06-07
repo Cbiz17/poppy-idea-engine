@@ -545,7 +545,13 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     }
     
     setSuggestedIdeaForReview(branchContext)
-    setIsReviewModalOpen(true)
+    
+    // Important: For branching, always use the EnhancedSaveModal when there's a currentIdeaContext
+    if (currentIdeaContext) {
+      setIsEnhancedModalOpen(true)
+    } else {
+      setIsReviewModalOpen(true)
+    }
   }
 
   const handleConfirmSaveIdea = async (
@@ -562,7 +568,8 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
       
       let savedIdea = null
       
-      if (isBranch) {
+      // For branches, always save as new idea
+      if (isBranch || (saveType === 'new' && currentIdeaContext)) {
         // Handle branch saves through API
         const response = await fetch('/api/ideas', {
           method: 'POST',
@@ -571,7 +578,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
             ...editedIdea,
             conversationId: currentConversationId,
             branchedFromId: currentIdeaContext?.id || fullMetadata.parentIdeaId,
-            branchNote: (suggestedIdeaForReview as any)?.branchNote || fullMetadata.branchNote,
+            branchNote: (suggestedIdeaForReview as any)?.branchNote || fullMetadata.branchNote || 'Branched from parent idea',
             isBranch: true
           })
         })
@@ -585,7 +592,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         savedIdea = idea
         
       } else if (saveType === 'new') {
-        // Create new idea
+        // Create new idea (not a branch)
         savedIdea = await saveIdea(editedIdea, currentConversationId)
         
       } else if (saveType === 'update' || saveType === 'merge') {
@@ -613,12 +620,15 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
               idea_title: editedIdea.title,
               idea_category: editedIdea.category,
               content_length: editedIdea.content.length,
-              save_type: saveType,
+              save_type: isBranch ? 'branch' : saveType,
+              is_branch: isBranch,
               ...(metadata || {})
             }
           })
 
-        const actionMessage = saveType === 'new' 
+        const actionMessage = isBranch 
+          ? 'New branch created successfully!' 
+          : saveType === 'new' 
           ? 'New idea created successfully!' 
           : `Idea updated successfully! (Version ${savedIdea.development_count || 1})`
         
@@ -626,7 +636,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         
         clearContinuation()
         
-        if (saveType !== 'new' && savedIdea) {
+        if (saveType !== 'new' && !isBranch && savedIdea) {
           setCurrentIdeaContext(savedIdea)
         }
       }
