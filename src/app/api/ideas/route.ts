@@ -19,7 +19,9 @@ export async function POST(req: Request) {
       originalIdeaId,
       branchedFromId,
       branchNote,
-      isBranch
+      isBranch,
+      saveType,
+      metadata
     } = await req.json();
     
     const supabase = await createServerSupabaseClient();
@@ -95,6 +97,57 @@ export async function POST(req: Request) {
         continuation_detected_by: continuationContext.detectionMethod || 'user_explicit',
         detection_confidence: continuationContext.confidence || 1.0
       });
+    }
+    
+    // Track version history for branches
+    if (isBranch && branchedFromId) {
+      try {
+        // Get the parent idea details
+        const { data: parentIdea } = await supabase
+          .from('ideas')
+          .select('title, content, category')
+          .eq('id', branchedFromId)
+          .single();
+          
+        if (parentIdea) {
+          const previousVersion = {
+            title: parentIdea.title,
+            content: parentIdea.content,
+            category: parentIdea.category,
+            timestamp: new Date().toISOString()
+          };
+          
+          const newVersion = {
+            title,
+            content,
+            category,
+            timestamp: new Date().toISOString()
+          };
+          
+          await supabase
+            .from('idea_development_history')
+            .insert({
+              idea_id: newIdea.id,
+              user_id: user.id,
+              conversation_id: conversationId,
+              development_type: 'branch',
+              previous_version: previousVersion,
+              new_version: newVersion,
+              change_summary: branchNote || 'Branched from parent idea',
+              ai_confidence_score: metadata?.confidence || 1.0,
+              version_number: 1,
+              development_metadata: {
+                branch_from_id: branchedFromId,
+                branch_note: branchNote,
+                source: 'branch_creation',
+                ...(metadata || {})
+              }
+            });
+        }
+      } catch (historyError) {
+        console.error('Error tracking branch history:', historyError);
+        // Non-critical, continue
+      }
     }
     
     return NextResponse.json({ idea: newIdea });
