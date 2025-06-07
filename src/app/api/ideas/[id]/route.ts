@@ -131,18 +131,29 @@ export async function PATCH(
         { title, content, category }
       );
 
+      // Create the version objects in the correct format
+      const previousVersion = {
+        title: existingIdea.title,
+        content: existingIdea.content,
+        category: existingIdea.category,
+        timestamp: existingIdea.updated_at
+      };
+
+      const newVersion = {
+        title,
+        content,
+        category,
+        timestamp: new Date().toISOString()
+      };
+
       await supabase
         .from('idea_development_history')
         .insert({
           idea_id: id,
           conversation_id: conversationId || null,
           user_id: user.id,
-          previous_title: existingIdea.title,
-          new_title: title,
-          previous_content: existingIdea.content,
-          new_content: content,
-          previous_category: existingIdea.category,
-          new_category: category,
+          previous_version: previousVersion,
+          new_version: newVersion,
           development_type: finalDevelopmentType,
           change_summary: generateChangeSummary(existingIdea, { title, content, category }),
           ai_confidence_score: metadata?.confidence || 1.0,
@@ -289,15 +300,20 @@ export async function POST(
     // If this is a variation of an existing idea, track it
     if (saveType === 'new' && originalId) {
       try {
+        const newVersion = {
+          title,
+          content,
+          category,
+          timestamp: new Date().toISOString()
+        };
+
         await supabase
           .from('idea_development_history')
           .insert({
             idea_id: newIdea.id,
             user_id: user.id,
-            previous_title: '',
-            new_title: title,
-            previous_content: '',
-            new_content: content,
+            previous_version: {},
+            new_version: newVersion,
             development_type: 'new_variation',
             change_summary: `Created as a variation of existing idea`,
             ai_confidence_score: 1.0
