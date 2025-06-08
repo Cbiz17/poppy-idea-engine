@@ -35,6 +35,7 @@ import {
 
 import IdeaReviewModal from '@/components/ideas/IdeaReviewModal'
 import EnhancedSaveModal from '@/components/ideas/EnhancedSaveModal'
+import IdeaHistoryModal from '@/components/ideas/IdeaHistoryModal'
 import FeedbackTooltip from '@/components/feedback/FeedbackTooltip'
 import { UserFeedbackStats } from '@/components/feedback/UserFeedbackStats'
 
@@ -71,6 +72,9 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   const [showFloatingSave, setShowFloatingSave] = useState(false)
   const [selectedMessageForSave, setSelectedMessageForSave] = useState<string | null>(null)
   const [hasValueableContent, setHasValueableContent] = useState(false)
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
+  const [historyIdeaId, setHistoryIdeaId] = useState<string | null>(null)
+  const [historyIdeaTitle, setHistoryIdeaTitle] = useState<string>('')
 
   // Hooks
   const {
@@ -120,7 +124,12 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
 
   const { handleSpecialCommands } = useSpecialCommands({
     currentIdeaContext,
-    fetchIdeaHistory: fetchHistory,
+    fetchIdeaHistory: (ideaId: string) => {
+      // Open the history modal instead of adding to chat
+      setHistoryIdeaId(ideaId)
+      setHistoryIdeaTitle(currentIdeaContext?.title || 'Idea History')
+      setIsHistoryModalOpen(true)
+    },
     addMessage
   });
 
@@ -718,7 +727,11 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         {currentIdeaContext && (
           <IdeaDevelopmentBanner
             currentIdeaContext={currentIdeaContext}
-            onViewHistory={() => fetchIdeaHistory(currentIdeaContext.id)}
+            onViewHistory={() => {
+              setHistoryIdeaId(currentIdeaContext.id)
+              setHistoryIdeaTitle(currentIdeaContext.title)
+              setIsHistoryModalOpen(true)
+            }}
           />
         )}
         
@@ -846,6 +859,19 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
           }}
           onSave={handleConfirmSaveIdea}
           categories={[...CATEGORIES]}
+        />
+      )}
+      
+      {/* Idea History Modal */}
+      {historyIdeaId && (
+        <IdeaHistoryModal
+          isOpen={isHistoryModalOpen}
+          ideaId={historyIdeaId}
+          ideaTitle={historyIdeaTitle}
+          onClose={() => {
+            setIsHistoryModalOpen(false)
+            setHistoryIdeaId(null)
+          }}
         />
       )}
       
