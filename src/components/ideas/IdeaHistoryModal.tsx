@@ -40,6 +40,7 @@ export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }:
   const [currentIdea, setCurrentIdea] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedVersion, setSelectedVersion] = useState<IdeaVersion | null>(null)
+  const [showCurrentVersion, setShowCurrentVersion] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -153,7 +154,7 @@ export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }:
                     </div>
                   </div>
                   <button
-                    onClick={() => setSelectedVersion(null)}
+                    onClick={() => setShowCurrentVersion(true)}
                     className="ml-4 px-4 py-2 bg-white border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors text-sm font-medium text-purple-600"
                   >
                     View Full
@@ -161,7 +162,17 @@ export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }:
                 </div>
               </div>
 
-              {/* Timeline Connector */}
+              {/* No History Message */}
+              {history.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-lg">No development history yet</p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    Updates to this idea will appear here as you develop it further
+                  </p>
+                </div>
+              )}
+
+              {/* Timeline Connector - only show if there's history */}
               {history.length > 0 && (
                 <div className="relative">
                   <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-300"></div>
@@ -207,7 +218,7 @@ export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }:
 
                         <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
                           <span>📅 {new Date(version.created_at).toLocaleDateString()}</span>
-                          <span>💬 {version.conversation_length} messages</span>
+                          {version.conversation_length && <span>💬 {version.conversation_length} messages</span>}
                         </div>
                       </div>
                       
@@ -241,6 +252,56 @@ export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }:
             </div>
           )}
         </div>
+
+        {/* Current Version Details Modal */}
+        {showCurrentVersion && currentIdea && (
+          <div className="absolute inset-0 bg-white z-10 flex flex-col">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Current Version</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Last updated {new Date(currentIdea.updated_at).toLocaleString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowCurrentVersion(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Title</h4>
+                  <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{currentIdea.title}</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Content</h4>
+                  <div className="text-gray-700 bg-gray-50 p-4 rounded-lg whitespace-pre-wrap">
+                    {currentIdea.content}
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Category</h4>
+                  <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{currentIdea.category}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Development Count</h4>
+                  <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">Version {currentIdea.development_count || 1}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Version Details Modal */}
         {selectedVersion && (
