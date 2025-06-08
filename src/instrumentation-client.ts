@@ -43,8 +43,7 @@ Sentry.init({
   beforeSend(event, hint) {
     // Filter out errors from browser extensions
     if (event.exception) {
-      const error = hint.originalException;
-      // @ts-ignore
+      const error = hint.originalException as Error & { stack?: string };
       if (error && error.stack && error.stack.match(/chrome-extension:|moz-extension:|ms-browser-extension:/)) {
         return null;
       }
