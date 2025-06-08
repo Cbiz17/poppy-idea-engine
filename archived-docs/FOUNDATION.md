@@ -61,24 +61,28 @@ The magic happens in four interconnected spaces:
 The self-improvement system operates on multiple interconnected levels:
 
 **Data Collection Layer** - Captures user feedback through multiple channels:
+
 - Explicit feedback (thumbs up/down, ratings, written comments)
 - Implicit feedback (idea saves, conversation continuations, time spent)
 - Contextual tags that identify what makes responses valuable
 - Conversation outcomes and user satisfaction metrics
 
 **Pattern Analysis Engine** - Uses AI to analyze successful vs unsuccessful interactions:
+
 - Identifies linguistic patterns in highly-rated responses
 - Recognizes conversation structures that lead to idea generation
 - Extracts successful approaches from user behavior data
 - Generates insights about effective communication styles
 
 **Dynamic Prompt Evolution** - Creates and tests improved AI prompts:
+
 - Automatically generates new system prompts based on successful patterns
 - Implements A/B testing to validate prompt improvements
 - Tracks performance metrics across different prompt versions
 - Activates better-performing prompts automatically
 
 **Learning Memory System** - Stores and retrieves successful interaction patterns:
+
 - Vector embeddings of successful conversation techniques
 - Searchable database of effective response strategies
 - Context-aware retrieval of relevant past successes
@@ -87,6 +91,7 @@ The self-improvement system operates on multiple interconnected levels:
 ### Development and Monitoring Infrastructure
 
 **Browser DevTools MCP Server** - Custom MCP server providing:
+
 - Real-time console log monitoring with WebSocket integration
 - Network request tracking and performance analysis
 - JavaScript execution in browser context for testing
@@ -94,12 +99,14 @@ The self-improvement system operates on multiple interconnected levels:
 - Performance metrics collection and analysis
 
 **Enhanced Logging System** - Comprehensive development logging:
+
 - Database-persisted logs with structured categorization
 - Development panel with search, filtering, and export capabilities
 - Integration with the self-improvement system for debugging AI responses
 - Real-time log streaming for immediate feedback
 
 **Error Monitoring and Analytics** - Production-grade monitoring:
+
 - Automatic error capture with full context
 - Performance monitoring with real user metrics
 - User session replay for debugging complex issues
@@ -121,7 +128,7 @@ The database design captures five layers of information that enable sophisticate
 
 ### Security and Privacy in Learning Systems
 
-User data protection operates on multiple levels while enabling system learning. Supabase's Row Level Security ensures database-level isolation between users. All learning algorithms operate on aggregated, anonymized data patterns rather than individual user information. 
+User data protection operates on multiple levels while enabling system learning. Supabase's Row Level Security ensures database-level isolation between users. All learning algorithms operate on aggregated, anonymized data patterns rather than individual user information.
 
 The self-improvement system learns from collective patterns while maintaining strict individual privacy. Users can see and control how their feedback contributes to system improvement through the transparent admin dashboard.
 
@@ -325,7 +332,9 @@ CREATE TABLE public.idea_development_history (
 ## The Learning Cycle: How AI Improves
 
 ### 1. Feedback Collection
+
 Every interaction generates learning data:
+
 - User ratings and written feedback on AI responses
 - Implicit signals like idea saves and conversation continuations
 - Context tags identifying what makes responses valuable
@@ -333,7 +342,9 @@ Every interaction generates learning data:
 - Error logs and performance metrics from monitoring systems
 
 ### 2. Pattern Analysis
+
 The system continuously analyzes successful interactions:
+
 - Identifies linguistic patterns in highly-rated responses
 - Recognizes conversation structures that lead to productive outcomes
 - Extracts effective communication techniques from user feedback
@@ -341,7 +352,9 @@ The system continuously analyzes successful interactions:
 - Correlates technical performance with user satisfaction
 
 ### 3. Prompt Evolution
+
 Based on patterns, the system generates improved AI prompts:
+
 - Creates new system prompts incorporating successful techniques
 - Tests different approaches through A/B testing
 - Measures performance against user satisfaction metrics
@@ -349,7 +362,9 @@ Based on patterns, the system generates improved AI prompts:
 - Logs all changes for debugging and rollback capabilities
 
 ### 4. Continuous Refinement
+
 The cycle repeats with each interaction:
+
 - New feedback data refines understanding of effective patterns
 - Prompt performance is continuously monitored and improved
 - Learning patterns are updated with new successful examples
@@ -359,6 +374,7 @@ The cycle repeats with each interaction:
 ## API Architecture for Learning Systems
 
 ### Core Chat API (`/api/chat-enhanced`)
+
 - Dynamically selects active AI prompts based on performance
 - Logs conversation context for learning analysis
 - Integrates with feedback collection system
@@ -366,6 +382,7 @@ The cycle repeats with each interaction:
 - Includes error monitoring and performance tracking
 
 ### Feedback API (`/api/feedback`)
+
 - Collects and stores user feedback on AI responses
 - Triggers automatic pattern analysis for learning
 - Implements privacy-preserving aggregation
@@ -373,6 +390,7 @@ The cycle repeats with each interaction:
 - Logs feedback events for debugging
 
 ### Prompts API (`/api/prompts`)
+
 - Manages dynamic prompt versions and performance tracking
 - Implements A/B testing for prompt optimization
 - Provides analytics on prompt effectiveness
@@ -380,12 +398,14 @@ The cycle repeats with each interaction:
 - Includes version control and rollback capabilities
 
 ### Development APIs
+
 - `/api/dev-logs` - Enhanced development logging
 - `/api/monitor` - System health and performance monitoring
 - Integration with Sentry for error tracking
 - Performance metrics collection and analysis
 
 ### Analytics Integration
+
 - Real-time dashboard for monitoring AI performance
 - Trend analysis for understanding improvement over time
 - Pattern visualization for identifying successful techniques
@@ -449,24 +469,28 @@ The patterns learned here about effective human-AI interaction will directly inf
 ## Technical Implementation Notes
 
 ### Vector Search Integration
+
 - OpenAI embeddings for semantic similarity in ideas and conversations
 - HNSW indexes for efficient similarity search at scale
 - Contextual retrieval of relevant past interactions
 - Semantic matching for learning pattern identification
 
 ### Real-Time Learning Pipeline
+
 - Asynchronous pattern analysis to avoid blocking user interactions
 - Batch processing for computationally intensive learning tasks
 - Real-time feedback aggregation for immediate insights
 - Streaming updates to admin dashboard for live monitoring
 
 ### Privacy-Preserving Analytics
+
 - Differential privacy techniques for protecting individual data
 - Aggregate pattern analysis without individual identification
 - User control over data usage for improvement purposes
 - Transparent reporting of how user data contributes to learning
 
 ### Development and Production Monitoring
+
 - Real-time error tracking with immediate alerting
 - Performance monitoring with detailed metrics collection
 - User session replay for debugging complex issues

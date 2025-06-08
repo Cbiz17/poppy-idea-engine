@@ -3,6 +3,7 @@
 ## Proposed Structure
 
 ### 1. Root Directory (Keep Minimal)
+
 - **README.md** - Project overview with links to detailed docs
 - **CONTRIBUTING.md** - Developer guidelines (rename from IMPORTANT_DOCUMENTATION_UPDATE.md)
 - **.env.example** - Environment variables template
@@ -10,16 +11,19 @@
 ### 2. /docs Directory (Organized Documentation)
 
 #### Core Documentation
+
 - **VISION.md** ✅ (Already created - the Poppy household OS vision)
 - **ARCHITECTURE.md** ✅ (Already created - technical decisions)
 - **PROJECT_STATUS.md** (Consolidate all status files into one current version)
 - **DEVELOPMENT_GUIDE.md** (Merge FOUNDATION.md technical parts + setup instructions)
 
 #### Learning & Insights
+
 - **LEARNING_INSIGHTS.md** ✅ (Already created)
 - **SELF_IMPROVEMENT_SYSTEM.md** (Extract from FOUNDATION.md)
 
 #### Guides
+
 - **guides/AB_TESTING.md** (Consolidate both A/B testing docs)
 - **guides/DEPLOYMENT.md** (Merge all deployment-related files)
 - **guides/CONTRIBUTING.md** (Move from root, expand with examples)
@@ -28,6 +32,7 @@
 ### Files to Archive or Delete
 
 #### Delete (Redundant/Outdated)
+
 - `/PROJECT_STATUS.md` (root - use docs version)
 - `/docs/PROJECT-STATUS.md` (duplicate)
 - `/docs/PROJECT-STATUS-MAY-30-2025.md` (outdated)
@@ -43,6 +48,7 @@
 - `/docs/QUICK-REFERENCE.md` (merge into DEVELOPMENT_GUIDE.md)
 
 #### Archive (Historical Reference)
+
 - `/archived-docs/` (new directory)
   - Move all outdated status files here
   - Move specific deployment scripts here
@@ -50,12 +56,14 @@
 ### New Consolidated Documents Needed
 
 1. **CONTRIBUTING.md** (root)
+
    - Based on IMPORTANT_DOCUMENTATION_UPDATE.md
    - Add the "keep it simple" philosophy
    - Include code style guidelines
    - Add PR process
 
 2. **docs/DEVELOPMENT_GUIDE.md**
+
    - Quick start instructions
    - Local development setup
    - Database setup
@@ -63,6 +71,7 @@
    - Testing approach
 
 3. **docs/guides/DEPLOYMENT.md**
+
    - Vercel deployment process
    - Environment variables
    - Database migrations

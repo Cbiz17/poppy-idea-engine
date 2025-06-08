@@ -16,6 +16,7 @@ npm install --save-dev @types/canvas-confetti
 5. Run the query
 
 This will:
+
 - Add gamification fields to profiles table
 - Create achievement tracking tables
 - Set up automatic point calculation
@@ -43,6 +44,7 @@ import FeedbackComponent from '@/components/feedback/EnhancedFeedbackComponent'
 Update `/src/components/chat/ChatInterface.tsx`:
 
 1. Add imports at the top:
+
 ```typescript
 import { useFeedbackStats } from '@/hooks/useFeedbackStats'
 import { UserFeedbackStats } from '@/components/feedback/UserFeedbackStats'
@@ -50,20 +52,22 @@ import { useAchievementNotifications } from '@/components/feedback/AchievementNo
 ```
 
 2. Inside the component, add:
+
 ```typescript
 const { stats, refreshStats } = useFeedbackStats({ user })
 const { showAchievement, AchievementComponent } = useAchievementNotifications()
 ```
 
 3. Add UserFeedbackStats before the main chat area:
+
 ```typescript
 return (
   <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex flex-col">
     <ChatHeader ... />
     <UserFeedbackStats user={user} />  {/* Add this line */}
-    
+
     {/* Rest of your UI */}
-    
+
     <AchievementComponent />  {/* Add this at the end */}
   </div>
 )
@@ -74,8 +78,8 @@ return (
 In `/src/components/chat/components/ChatMessage.tsx`, pass stats to feedback:
 
 ```typescript
-<FeedbackComponent 
-  messageId={message.id} 
+<FeedbackComponent
+  messageId={message.id}
   userStats={stats ? {
     totalFeedback: stats.totalFeedback,
     currentStreak: stats.currentStreak,
@@ -114,7 +118,7 @@ const getAchievementName = (id: string) => {
     'streak-7': 'Week Warrior',
     'points-100': 'Point Collector',
     'points-500': 'XP Hunter',
-    'points-1000': 'Master Trainer'
+    'points-1000': 'Master Trainer',
   }
   return names[id] || 'Achievement'
 }
@@ -127,7 +131,7 @@ const getAchievementDescription = (id: string) => {
     'streak-7': 'Maintain a 7-day streak',
     'points-100': 'Earn 100 total points',
     'points-500': 'Earn 500 total points',
-    'points-1000': 'Earn 1000 total points'
+    'points-1000': 'Earn 1000 total points',
   }
   return descriptions[id] || 'New achievement unlocked!'
 }
@@ -140,7 +144,7 @@ const getAchievementIcon = (id: string) => {
     'streak-7': 'fire',
     'points-100': 'coins',
     'points-500': 'gem',
-    'points-1000': 'diamond'
+    'points-1000': 'diamond',
   }
   return icons[id] || 'star'
 }
@@ -161,6 +165,7 @@ const getAchievementIcon = (id: string) => {
 ## Step 8: Verify Database Updates
 
 Check in Supabase:
+
 1. Look at the `profiles` table - should see `feedback_stats` column with data
 2. Check `user_achievements` table for unlocked achievements
 3. Check `feedback_rewards` table for point logs
@@ -176,6 +181,7 @@ Check in Supabase:
 ## Next Steps:
 
 After basic implementation works:
+
 - Customize point values
 - Add more achievements
 - Create special events (double XP weekends)

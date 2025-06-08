@@ -1,7 +1,9 @@
 # TODO LIST - Poppy Idea Engine
+
 **Updated: May 29, 2025**
 
 ## ✅ COMPLETED FEATURES (Do NOT redo these!)
+
 1. ✅ **DevButton Integration** - Floating 🐛 button IS in layout.tsx
 2. ✅ **Browser DevTools MCP Server** - FULLY IMPLEMENTED in /mcp-servers/browser-devtools/
 3. ✅ **Dev-logging Schema** - DEPLOYED to Supabase (table visible in dashboard)
@@ -19,6 +21,7 @@
 15. ✅ **Bulk Export** - Export ideas as Markdown
 
 ## 🚨 ACTUAL IMMEDIATE NEEDS (May 29, 2025)
+
 1. **Run SQL Scripts** - Execute seed-dynamic-prompts.sql and add-branching-support.sql in Supabase
 2. **Generate Feedback Data** - USE the app and CLICK feedback buttons
 3. **Monitor Learning** - Check /admin dashboard for emerging patterns
@@ -27,17 +30,20 @@
 ## 🔄 SHORT TERM IMPROVEMENTS (After Data Collection)
 
 ### Code Quality
+
 1. **Component Refactoring** - Split ChatInterface.tsx into smaller components
 2. **Custom Hooks** - Extract useConversation, useIdeas, useFeedback
 3. **Constants File** - Move magic strings/numbers to configuration
 4. **Remove Console Logs** - Clean up remaining console.log statements
 
 ### Testing
+
 5. **Unit Tests** - Add tests for FeedbackComponent, API routes
 6. **Integration Tests** - Test database operations, API endpoints
 7. **E2E Tests** - Complete user flows with Playwright
 
 ### Performance
+
 8. **Virtual Scrolling** - Implement for large idea collections
 9. **Code Splitting** - Dynamic imports for admin dashboard
 10. **Optimistic Updates** - Update UI before server confirms
@@ -68,18 +74,21 @@
 ## 🚀 FUTURE FEATURES (Post-Launch)
 
 ### Phase 1 (Month 1)
+
 - **Real-time Collaboration** - Multiple users on same idea
 - **Idea Templates** - Pre-built structures
 - **Advanced Search** - Full-text and semantic
 - **Export Options** - PDF, Notion, Obsidian
 
 ### Phase 2 (Month 2-3)
+
 - **Mobile App** - React Native implementation
 - **Voice Input** - Speech-to-text for ideas
 - **AI Suggestions** - Proactive idea improvements
 - **Public Sharing** - Share ideas with links
 
 ### Phase 3 (Month 4-6)
+
 - **Plugin System** - Extensibility framework
 - **API Access** - Developer API
 - **Team Workspaces** - Organization features
@@ -104,6 +113,7 @@
 ---
 
 ## 📊 CURRENT PROJECT STATUS
+
 - ✅ **Core Application**: Fully functional with 56 conversations
 - ✅ **Self-Improvement System**: Implemented, needs feedback data
 - ✅ **Browser DevTools MCP Server**: Operational with Puppeteer

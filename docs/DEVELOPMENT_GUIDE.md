@@ -5,6 +5,7 @@ This guide covers everything you need to develop on the Poppy Idea Engine effect
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ and npm
 - Git
 - A Supabase account (free tier works)
@@ -45,11 +46,13 @@ NEXT_PUBLIC_DEV_MODE=true       # Enables dev tools
 ### Database Setup
 
 1. **Create a Supabase Project**
+
    - Go to [supabase.com](https://supabase.com)
    - Create a new project
    - Save your project URL and anon key
 
 2. **Run Database Migrations**
+
    ```sql
    -- In Supabase SQL Editor, run these in order:
    -- 1. database-setup.sql (core tables)
@@ -75,6 +78,7 @@ npm run dev
 ## 🏗 Architecture Overview
 
 ### Tech Stack
+
 - **Framework**: Next.js 14 with App Router
 - **Database**: Supabase (PostgreSQL + pgvector)
 - **AI**: Anthropic Claude API
@@ -109,18 +113,21 @@ src/
 ### Key Components
 
 #### Chat System (`/components/chat/ChatInterface.tsx`)
+
 - Manages conversation flow
 - Handles message streaming
 - Integrates feedback collection
 - Supports special commands
 
 #### Ideas Management (`/components/ideas/IdeasGallery.tsx`)
+
 - Visual card-based gallery
 - Version history tracking
 - Search and filtering
 - Export functionality
 
 #### Self-Improvement System
+
 - **Feedback Collection**: After every AI response
 - **Pattern Analysis**: Identifies successful interactions
 - **Dynamic Prompts**: AI adapts based on feedback
@@ -131,21 +138,24 @@ src/
 ### Making Changes
 
 1. **Create a Feature Branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 2. **Follow Code Standards**
+
    - Use TypeScript with proper types
    - Follow existing component patterns
    - Use Tailwind classes (no custom CSS)
    - Keep components focused and simple
 
 3. **Test Your Changes**
+
    ```bash
    # Type checking
    npm run build
-   
+
    # Manual testing
    - Test with multiple users
    - Check mobile responsiveness
@@ -156,26 +166,30 @@ src/
 ### Common Development Tasks
 
 #### Adding a New API Route
+
 ```typescript
 // src/app/api/your-route/route.ts
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function POST(req: Request) {
   const supabase = await createServerSupabaseClient()
-  
+
   // Check authentication
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     return new Response('Unauthorized', { status: 401 })
   }
-  
+
   // Your logic here
-  
+
   return Response.json({ success: true })
 }
 ```
 
 #### Creating a New Component
+
 ```typescript
 // src/components/your-component.tsx
 'use client'
@@ -186,7 +200,7 @@ interface YourComponentProps {
 
 export function YourComponent({ ...props }: YourComponentProps) {
   // Component logic
-  
+
   return (
     <div className="...">
       {/* Component UI */}
@@ -196,18 +210,18 @@ export function YourComponent({ ...props }: YourComponentProps) {
 ```
 
 #### Adding Database Queries
+
 ```typescript
 // Always include user_id in queries for RLS
-const { data, error } = await supabase
-  .from('your_table')
-  .select('*')
-  .eq('user_id', user.id)
+const { data, error } = await supabase.from('your_table').select('*').eq('user_id', user.id)
 ```
 
 ## 🛠 Development Tools
 
 ### Browser DevTools MCP Server
+
 For advanced debugging:
+
 ```bash
 # In a separate terminal
 cd mcp-servers/browser-devtools
@@ -221,7 +235,9 @@ npm start
 ```
 
 ### Enhanced Logging
+
 Use the dev logger instead of console.log:
+
 ```typescript
 import { devLogger } from '@/lib/dev-logger'
 
@@ -230,7 +246,9 @@ devLogger.error('Component', 'Error occurred', error)
 ```
 
 ### Development Panel
+
 The floating 🐛 button provides:
+
 - Searchable logs
 - Database query logs
 - Performance metrics
@@ -239,6 +257,7 @@ The floating 🐛 button provides:
 ## 🧪 Testing Approach
 
 ### Manual Testing Checklist
+
 - [ ] Feature works for new users
 - [ ] Feature works for existing users
 - [ ] Data isolation is maintained
@@ -248,6 +267,7 @@ The floating 🐛 button provides:
 - [ ] Keyboard navigation works
 
 ### Testing Different Scenarios
+
 ```bash
 # Test with multiple users
 # 1. Sign in with User A
@@ -262,27 +282,31 @@ The floating 🐛 button provides:
 ### Common Issues
 
 **"Failed to fetch" errors**
+
 - Check Supabase connection
 - Verify environment variables
 - Check RLS policies
 
 **TypeScript errors**
+
 - Run `npm run build` to see all errors
 - Check generated types match database
 
 **Authentication issues**
+
 - Verify Google OAuth configured
 - Check redirect URLs
 - Test in incognito window
 
 ### Useful Database Queries
+
 ```sql
 -- Check user data
 SELECT * FROM profiles WHERE id = 'user-uuid';
 
 -- View feedback patterns
-SELECT feedback_type, COUNT(*) 
-FROM message_feedback 
+SELECT feedback_type, COUNT(*)
+FROM message_feedback
 GROUP BY feedback_type;
 
 -- Check conversation count
@@ -294,7 +318,9 @@ GROUP BY user_id;
 ## 📚 Key Concepts
 
 ### Row Level Security (RLS)
+
 Every table uses RLS to isolate user data:
+
 ```sql
 -- Users only see their own data
 CREATE POLICY "Users view own data" ON ideas
@@ -302,13 +328,17 @@ FOR SELECT USING (user_id = auth.uid());
 ```
 
 ### Vector Embeddings
+
 Used for semantic search:
+
 - Ideas and messages get embeddings
 - Enables "find similar" functionality
 - Powers smart continuation detection
 
 ### Dynamic Prompts
+
 AI system prompts that evolve:
+
 - Based on user feedback
 - A/B tested for effectiveness
 - Automatically activated when better
@@ -316,6 +346,7 @@ AI system prompts that evolve:
 ## 🚀 Advanced Features
 
 ### Adding Special Commands
+
 ```typescript
 // In useSpecialCommands hook
 if (input.startsWith('/mycommand')) {
@@ -325,12 +356,14 @@ if (input.startsWith('/mycommand')) {
 ```
 
 ### Implementing New Feedback Types
+
 1. Update database schema
 2. Add to feedback component
 3. Update analytics queries
 4. Add to admin dashboard
 
 ### Creating New Visualizations
+
 - Use existing chart components
 - Follow the dashboard patterns
 - Keep performance in mind

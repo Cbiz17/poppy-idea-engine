@@ -5,6 +5,7 @@
 ### 1. "Expected unicode escape" Error in Admin Console
 
 **Error**: When accessing `/admin/prompts`, you see:
+
 ```
 Build Error
 Error: × Expected unicode escape
@@ -12,12 +13,14 @@ Error: × Expected unicode escape
 
 **Cause**: This is a hydration error that occurs when server-side rendering tries to pass data to client components.
 
-**Solution**: 
+**Solution**:
+
 - This has been fixed in the latest update
 - The admin pages now use client-side data fetching
 - Clear your browser cache and restart the dev server
 
 **Prevention**:
+
 - Always use 'use client' directive for pages that need client-side features
 - Fetch data within useEffect for client components
 - Don't mix server and client rendering patterns
@@ -27,11 +30,13 @@ Error: × Expected unicode escape
 **Symptoms**: Clicking feedback buttons doesn't seem to work
 
 **Common Causes**:
+
 1. Invalid message IDs (not proper UUIDs)
 2. Database connection issues
 3. RLS policies blocking writes
 
 **Solutions**:
+
 - Check browser console for errors
 - Verify message IDs are valid UUIDs (contain dashes)
 - Check Supabase logs for RLS policy violations
@@ -42,6 +47,7 @@ Error: × Expected unicode escape
 **Symptoms**: All stats show 0 even after using the app
 
 **Solutions**:
+
 1. Verify feedback is being saved:
    ```sql
    SELECT COUNT(*) FROM message_feedback;
@@ -53,11 +59,13 @@ Error: × Expected unicode escape
 ### 4. Ideas Not Saving
 
 **Common Issues**:
+
 - Conversation ID not set
 - Embedding generation fails
 - Database connection timeout
 
 **Debug Steps**:
+
 1. Check browser console for API errors
 2. Verify conversation exists in database
 3. Check Supabase logs for errors
@@ -68,6 +76,7 @@ Error: × Expected unicode escape
 **Symptoms**: Blank screen or infinite loading
 
 **Solutions**:
+
 - Check authentication status
 - Verify Supabase connection
 - Clear browser localStorage
@@ -78,6 +87,7 @@ Error: × Expected unicode escape
 **Error**: Browser DevTools MCP server not connecting
 
 **Solutions**:
+
 ```bash
 # Ensure dependencies installed
 cd mcp-servers/browser-devtools
@@ -93,6 +103,7 @@ DEBUG=* node index.js
 ### 7. Sentry Errors Not Appearing
 
 **Check**:
+
 - Verify NEXT_PUBLIC_SENTRY_DSN is set
 - Check Sentry project settings
 - Ensure environment is correct (development/production)
@@ -103,6 +114,7 @@ DEBUG=* node index.js
 **Symptoms**: Semantic search returns no results
 
 **Solutions**:
+
 1. Verify embeddings are being generated
 2. Check vector extension is installed:
    ```sql
@@ -116,6 +128,7 @@ DEBUG=* node index.js
 **Issue**: Floating 🐛 button missing
 
 **Check**:
+
 - DevPanel component is imported in layout.tsx
 - Browser console for errors
 - Component visibility CSS
@@ -126,6 +139,7 @@ DEBUG=* node index.js
 **Symptoms**: Slow response times, timeouts
 
 **Optimizations**:
+
 1. Add database indexes:
    ```sql
    CREATE INDEX idx_messages_conversation ON conversation_messages(conversation_id);
@@ -138,6 +152,7 @@ DEBUG=* node index.js
 ## Debug Commands
 
 ### Check System Health
+
 ```bash
 # Test API endpoints
 curl http://localhost:3000/api/health
@@ -150,28 +165,30 @@ npm run check:env
 ```
 
 ### Database Queries
+
 ```sql
 -- Check recent errors
-SELECT * FROM dev_logs 
-WHERE level = 'error' 
-ORDER BY created_at DESC 
+SELECT * FROM dev_logs
+WHERE level = 'error'
+ORDER BY created_at DESC
 LIMIT 10;
 
 -- Verify user permissions
 SELECT * FROM pg_roles WHERE rolname = 'authenticated';
 
 -- Check table row counts
-SELECT 
+SELECT
   'conversations' as table_name, COUNT(*) as count FROM conversations
 UNION ALL
 SELECT 'ideas', COUNT(*) FROM ideas
-UNION ALL  
+UNION ALL
 SELECT 'message_feedback', COUNT(*) FROM message_feedback;
 ```
 
 ### Quick Fixes
 
 **Reset local state**:
+
 ```javascript
 localStorage.clear()
 sessionStorage.clear()
@@ -179,15 +196,17 @@ window.location.reload()
 ```
 
 **Force refresh data**:
+
 ```javascript
 // In browser console
 await window.__supabase.auth.refreshSession()
 ```
 
 **Enable debug logging**:
+
 ```javascript
 // Add to .env.local
-NEXT_PUBLIC_DEBUG=true
+NEXT_PUBLIC_DEBUG = true
 ```
 
 ## Getting Help

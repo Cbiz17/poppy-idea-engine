@@ -5,6 +5,7 @@ This guide covers deploying the Poppy Idea Engine to production.
 ## 🚀 Deployment Platform
 
 The project is configured for automatic deployment on **Vercel**:
+
 - Automatic deploys from `main` branch
 - Preview deployments for pull requests
 - Environment variable management
@@ -13,6 +14,7 @@ The project is configured for automatic deployment on **Vercel**:
 ## 📋 Pre-Deployment Checklist
 
 ### 1. Code Verification
+
 ```bash
 # Always run build check before deploying
 npm run build
@@ -25,7 +27,9 @@ npm run dev
 ```
 
 ### 2. Environment Variables
+
 Ensure these are set in Vercel:
+
 ```env
 # Required
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
@@ -38,7 +42,9 @@ SENTRY_DSN=your_sentry_dsn      # For error tracking
 ```
 
 ### 3. Database Migrations
+
 Before deploying new features, run any SQL migrations in Supabase:
+
 1. Go to Supabase SQL Editor
 2. Run migration files in order
 3. Verify with test queries
@@ -46,6 +52,7 @@ Before deploying new features, run any SQL migrations in Supabase:
 ## 🔄 Standard Deployment Process
 
 ### 1. Commit Changes
+
 ```bash
 # Stage changes
 git add -A
@@ -58,11 +65,13 @@ git push origin main
 ```
 
 ### 2. Monitor Deployment
+
 1. Check Vercel dashboard for build status
 2. Watch for any build errors
 3. Preview deployment before it goes live
 
 ### 3. Post-Deployment Verification
+
 - [ ] Visit production URL
 - [ ] Test new features
 - [ ] Check browser console for errors
@@ -72,12 +81,14 @@ git push origin main
 ## 🛠 Common Deployment Scenarios
 
 ### Adding New Database Tables
+
 1. Create migration SQL file
 2. Run in Supabase SQL Editor
 3. Update TypeScript types if needed
 4. Deploy application code
 
 ### Updating Environment Variables
+
 1. Add to Vercel project settings
 2. Trigger redeployment:
    ```bash
@@ -86,6 +97,7 @@ git push origin main
    ```
 
 ### Rolling Back a Deployment
+
 1. In Vercel dashboard, go to deployments
 2. Find previous working deployment
 3. Click "..." menu → "Promote to Production"
@@ -93,17 +105,20 @@ git push origin main
 ## 🔐 Security Considerations
 
 ### Row Level Security (RLS)
+
 Always ensure new tables have proper RLS policies:
+
 ```sql
 -- Example RLS policy
-CREATE POLICY "Users can only see their own data" 
+CREATE POLICY "Users can only see their own data"
 ON public.table_name
-FOR ALL 
+FOR ALL
 TO authenticated
 USING (user_id = auth.uid());
 ```
 
 ### API Keys
+
 - Never commit API keys to git
 - Use environment variables
 - Rotate keys periodically
@@ -112,7 +127,9 @@ USING (user_id = auth.uid());
 ## 🐛 Troubleshooting Deployments
 
 ### Build Failures
+
 **TypeScript Errors**
+
 ```bash
 # Fix locally first
 npm run build
@@ -120,6 +137,7 @@ npm run build
 ```
 
 **Missing Dependencies**
+
 ```bash
 npm install
 npm run build
@@ -128,6 +146,7 @@ git commit -m "fix: Update dependencies"
 ```
 
 ### Runtime Errors
+
 1. Check Vercel Function logs
 2. Review Sentry error reports
 3. Test with production environment locally:
@@ -137,7 +156,9 @@ git commit -m "fix: Update dependencies"
    ```
 
 ### Database Issues
+
 **Missing Permissions**
+
 ```sql
 -- Grant necessary permissions
 GRANT ALL ON table_name TO authenticated;
@@ -149,6 +170,7 @@ USING (user_id = auth.uid());
 ```
 
 **Migration Failures**
+
 - Run migrations one at a time
 - Check for dependency order
 - Verify foreign key constraints
@@ -156,6 +178,7 @@ USING (user_id = auth.uid());
 ## 📊 Monitoring Production
 
 ### Key Metrics to Watch
+
 - Build time trends
 - Function execution duration
 - Error rate in Sentry
@@ -163,6 +186,7 @@ USING (user_id = auth.uid());
 - User feedback patterns
 
 ### Useful Commands
+
 ```bash
 # View recent commits
 git log --oneline -10
@@ -180,18 +204,21 @@ curl https://poppy-idea-engine.vercel.app/api/health
 ## 🚨 Emergency Procedures
 
 ### Site is Down
+
 1. Check Vercel status page
 2. Review recent deployments
 3. Rollback if needed
 4. Check Supabase status
 
 ### Data Issues
+
 1. **DO NOT** modify production data directly
 2. Test fixes in development first
 3. Use database transactions for updates
 4. Always backup before major changes
 
 ### High Error Rate
+
 1. Check Sentry for error patterns
 2. Identify problematic deployment
 3. Rollback if critical
