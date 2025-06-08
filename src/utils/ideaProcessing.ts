@@ -51,15 +51,30 @@ Please respond with ONLY a JSON object in this exact format:
       fullResponse += decoder.decode()
     }
 
+    // Clean the response to extract JSON
+    // The AI might return the JSON with some extra text, so we need to extract just the JSON part
+    const jsonMatch = fullResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.warn('No JSON found in AI response:', fullResponse)
+      throw new Error('No valid JSON in AI response')
+    }
+
     try {
-      const parsed = JSON.parse(fullResponse.trim())
+      const parsed = JSON.parse(jsonMatch[0])
+      
+      // Validate the parsed data
+      if (!parsed.title || !parsed.content || !parsed.category) {
+        console.warn('Incomplete AI response:', parsed)
+        throw new Error('Incomplete AI response')
+      }
+      
       return {
-        title: parsed.title || "New Idea",
-        content: parsed.content || "No summary available",
-        category: parsed.category || "General"
+        title: parsed.title,
+        content: parsed.content,
+        category: parsed.category
       }
     } catch (parseError) {
-      console.warn('Failed to parse AI response as JSON:', fullResponse)
+      console.warn('Failed to parse AI response as JSON:', jsonMatch[0])
       throw new Error('Invalid AI response format')
     }
   } catch (error) {
