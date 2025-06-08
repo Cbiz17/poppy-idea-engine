@@ -106,7 +106,7 @@ export default function PromptsAdmin({ user, prompts, recentFeedback }: PromptsA
           *,
           conversation_messages(content, role)
         `)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: false })
         .limit(50)
 
