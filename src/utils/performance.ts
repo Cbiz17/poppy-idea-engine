@@ -81,9 +81,11 @@ class PerformanceMonitor {
       const fidObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (entry.name === 'first-input') {
+            // Cast to any to access processingStart property
+            const eventEntry = entry as any
             this.recordMetric({
               name: 'fid',
-              value: entry.processingStart - entry.startTime,
+              value: eventEntry.processingStart - eventEntry.startTime,
               type: 'custom',
             })
           }
