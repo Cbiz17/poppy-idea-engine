@@ -54,24 +54,18 @@ export async function POST(req: Request) {
       // Continue without embedding
     }
     
+    // Fix: Use direct column names instead of metadata field
     const ideaData: any = {
       user_id: user.id,
       title,
       content,
       category,
       embedding,
-      development_count: isBranch ? 1 : 0
-    }
-    
-    // Add branching fields if provided
-    if (branchedFromId) {
-      ideaData.branched_from_id = branchedFromId
-      // Store branch note in metadata since branch_note column doesn't exist
-      ideaData.metadata = {
-        ...(ideaData.metadata || {}),
-        branch_note: branchNote,
-        is_branch: true
-      }
+      development_count: isBranch ? 1 : 0,
+      // Add branching fields directly as columns
+      branched_from_id: branchedFromId || null,
+      branch_note: branchNote || null,
+      is_branch: isBranch || false
     }
     
     const { data: newIdea, error: createError } = await supabase
