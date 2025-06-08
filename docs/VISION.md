@@ -33,7 +33,9 @@ Poppy won't just respond to commands - it will:
 ### Core Capabilities
 
 #### 1. Role-Aware Intelligence
+
 Poppy understands you wear different hats:
+
 - Parent planning weekend activities
 - Partner coordinating date nights
 - Professional managing work-life balance
@@ -42,7 +44,9 @@ Poppy understands you wear different hats:
 Each role has different priorities, communication styles, and decision factors.
 
 #### 2. Belief-Sensitive Operations
+
 Every family is unique. Poppy remembers and respects:
+
 - Dietary restrictions and food preferences
 - Parenting philosophies and boundaries
 - Cultural traditions and holidays
@@ -50,7 +54,9 @@ Every family is unique. Poppy remembers and respects:
 - Educational values and approaches
 
 #### 3. Multi-Person Coordination
+
 Unlike single-user assistants, Poppy orchestrates between people:
+
 - Syncing calendars across family members
 - Mediating scheduling conflicts
 - Coordinating carpools and logistics
@@ -58,7 +64,9 @@ Unlike single-user assistants, Poppy orchestrates between people:
 - Facilitating family communication
 
 #### 4. Deep Tool Integration
+
 Poppy works with your actual tools:
+
 - Google Calendar / Apple Calendar
 - Gmail / Outlook
 - Amazon / Shopping lists
@@ -67,7 +75,9 @@ Poppy works with your actual tools:
 - Smart home devices
 
 #### 5. Proactive Orchestration
+
 Instead of waiting for commands, Poppy:
+
 - Notices patterns and suggests optimizations
 - Alerts you to conflicts before they happen
 - Prepares for recurring needs
@@ -77,21 +87,27 @@ Instead of waiting for commands, Poppy:
 ## The Development Strategy
 
 ### Phase 1: Integration (Current)
+
 **The Idea Engine is teaching us:**
+
 - How AI can adapt to individual users
 - What makes conversations feel valuable
 - How to build trust through transparency
 - Pattern recognition in user needs
 
 ### Phase 2: Augmentation (Next)
+
 **Add intelligence to existing tools:**
+
 - Smart calendar conflict resolution
 - Proactive shopping list generation
 - Automated routine coordination
 - Cross-tool information synthesis
 
 ### Phase 3: Orchestration (Future)
+
 **Become the coordination layer:**
+
 - Full family calendar orchestration
 - Meal planning with shopping integration
 - Activity and logistics coordination
@@ -99,7 +115,9 @@ Instead of waiting for commands, Poppy:
 - Educational support systems
 
 ### Phase 4: Selective Replacement
+
 **Only when we've earned trust:**
+
 - Better shared calendars built for families
 - Integrated communication hubs
 - Unified task and project management
@@ -108,12 +126,14 @@ Instead of waiting for commands, Poppy:
 ## Why This Matters
 
 ### For Families
+
 - **Less stress**: Routine coordination happens automatically
 - **More connection**: Spend time together, not managing logistics
 - **Better decisions**: AI helps weigh complex tradeoffs
 - **Preserved values**: Technology that respects what matters to you
 
 ### For Society
+
 - **Human-AI alignment**: AI that truly serves human needs
 - **Privacy-first**: Your family's data stays yours
 - **Inclusive design**: Built for all family structures
@@ -132,6 +152,7 @@ Every day using the Idea Engine teaches us:
 ## The Technical Foundation
 
 ### Current Infrastructure (Idea Engine)
+
 - **Vector embeddings**: Semantic understanding of concepts
 - **Dynamic prompts**: AI that improves from feedback
 - **Personal context**: Individual preference tracking
@@ -139,6 +160,7 @@ Every day using the Idea Engine teaches us:
 - **Transparent learning**: Visible AI improvement
 
 ### Future Requirements (Poppy OS)
+
 - **Multi-tenant architecture**: Family-level data isolation
 - **Event-driven orchestration**: Real-time response to changes
 - **Plugin architecture**: Extensible tool integration
@@ -148,12 +170,14 @@ Every day using the Idea Engine teaches us:
 ## Success Metrics
 
 ### For the Idea Engine (Now)
+
 - Quality of ideas developed
 - User satisfaction with AI
 - Learning pattern effectiveness
 - Trust indicators
 
 ### For Poppy OS (Future)
+
 - Time saved on coordination
 - Reduction in family stress
 - Successful orchestrations
@@ -184,4 +208,4 @@ As we build toward Poppy, we always remember:
 
 **The Idea Engine is where we're learning. Poppy is where we're headed.**
 
-*This is a living document. As we learn more from the Idea Engine, we'll update our vision for Poppy.*
+_This is a living document. As we learn more from the Idea Engine, we'll update our vision for Poppy._

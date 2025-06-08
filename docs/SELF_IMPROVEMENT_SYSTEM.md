@@ -27,6 +27,7 @@ Every AI response includes feedback mechanisms:
 ```
 
 **Database Storage**:
+
 ```sql
 message_feedback
 ├── feedback_type (thumbs_up, thumbs_down, rating)
@@ -41,7 +42,7 @@ The system continuously analyzes successful interactions:
 
 ```sql
 -- Example: Find patterns in highly-rated responses
-SELECT 
+SELECT
   pattern_type,
   pattern_description,
   AVG(confidence_score) as effectiveness
@@ -52,6 +53,7 @@ ORDER BY effectiveness DESC;
 ```
 
 **What Gets Analyzed**:
+
 - Linguistic patterns in successful responses
 - Conversation structures that lead to idea generation
 - Response lengths that correlate with satisfaction
@@ -75,6 +77,7 @@ Based on patterns, the system generates improved prompts:
 ```
 
 **Improvement Strategies**:
+
 - Incorporate successful conversation techniques
 - Adjust tone based on user preferences
 - Focus on highly-rated response patterns
@@ -98,6 +101,7 @@ New prompts are tested against current versions:
 ```
 
 **Testing Process**:
+
 1. Users randomly assigned to control or variant
 2. Performance tracked for each group
 3. Statistical significance calculated
@@ -120,6 +124,7 @@ WHERE performance_metrics->>'success_rate' > 0.75
 The admin dashboard (`/admin`) provides transparency into the learning process:
 
 ### Key Metrics Displayed
+
 - **Total Feedback**: Count and trend
 - **Satisfaction Rate**: Percentage of positive feedback
 - **Active Users**: Engagement metrics
@@ -127,6 +132,7 @@ The admin dashboard (`/admin`) provides transparency into the learning process:
 - **Recent Feedback**: Real-time monitoring
 
 ### Prompt Management Interface
+
 - View all prompt versions
 - Compare performance metrics
 - Manually activate/deactivate prompts
@@ -134,6 +140,7 @@ The admin dashboard (`/admin`) provides transparency into the learning process:
 - Set up A/B tests
 
 ### Analytics & Insights
+
 - Performance over time graphs
 - Feedback distribution charts
 - Success pattern visualization
@@ -210,19 +217,15 @@ GET /api/analytics/patterns
 ```typescript
 // In chat-enhanced route
 const systemPrompt = await getDynamicSystemPrompt(
-  supabase, 
+  supabase,
   userId,
   messages,
   userContext,
   feedbackInsights
-);
+)
 
 // Personalization applied
-const personalizedPrompt = applyPersonalization(
-  systemPrompt,
-  userContext,
-  feedbackInsights
-);
+const personalizedPrompt = applyPersonalization(systemPrompt, userContext, feedbackInsights)
 ```
 
 ## 🎯 Using the System Effectively
@@ -244,12 +247,14 @@ const personalizedPrompt = applyPersonalization(
 ## 📈 Success Metrics
 
 ### System Health Indicators
+
 - Feedback collection rate > 30%
 - Average satisfaction > 3.5/5
 - Pattern confidence scores > 0.7
 - A/B test completion rate > 80%
 
 ### Improvement Indicators
+
 - Rising satisfaction trends
 - Decreasing negative feedback
 - Increasing user engagement
@@ -258,12 +263,14 @@ const personalizedPrompt = applyPersonalization(
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 1. **Multi-modal Learning**: Learn from voice, text, and behavior
 2. **Personalized Models**: Individual AI adaptations per user
 3. **Cross-Domain Transfer**: Apply learning to new contexts
 4. **Predictive Assistance**: Anticipate needs before asked
 
 ### Research Areas
+
 - Federated learning for privacy-preserved improvements
 - Real-time prompt adaptation during conversations
 - Emotional intelligence pattern recognition
@@ -274,16 +281,19 @@ const personalizedPrompt = applyPersonalization(
 ### Common Issues
 
 **No feedback being collected**
+
 - Check feedback component is rendered
 - Verify API endpoint is working
 - Ensure database permissions are set
 
 **Patterns not generating**
+
 - Need minimum 20-30 feedback entries
 - Check pattern analysis functions
 - Verify confidence thresholds
 
 **A/B tests not running**
+
 - Ensure users are being assigned
 - Check test configuration
 - Verify variant prompts exist
@@ -303,7 +313,7 @@ ORDER BY confidence_score DESC
 LIMIT 10;
 
 -- Check active prompts
-SELECT prompt_type, 
+SELECT prompt_type,
        performance_metrics->>'success_rate' as success_rate
 FROM dynamic_prompts
 WHERE is_active = true;
@@ -321,6 +331,7 @@ The self-improvement system transforms Poppy from a static tool into a living sy
 ---
 
 For implementation details, see:
+
 - [Architecture Documentation](./ARCHITECTURE.md)
 - [Admin Dashboard Guide](./guides/ADMIN_GUIDE.md)
 - [A/B Testing Guide](./guides/AB_TESTING.md)
