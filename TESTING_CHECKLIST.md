@@ -3,6 +3,7 @@
 ## 🔧 Pre-Launch Testing Checklist
 
 ### 1. Environment Setup
+
 - [ ] Verify all environment variables are set correctly
   - [ ] `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - [ ] `ANTHROPIC_API_KEY` and `ANTHROPIC_MODEL`
@@ -15,6 +16,7 @@
 - [ ] MCP Browser DevTools server can start
 
 ### 2. Authentication Flow
+
 - [ ] Google OAuth sign-in works
 - [ ] Email sign-in works (if enabled)
 - [ ] Sign-out properly clears session
@@ -23,6 +25,7 @@
 - [ ] Onboarding flow completes successfully
 
 ### 3. Core Chat Functionality
+
 - [ ] Messages send and receive properly
 - [ ] AI responses stream correctly
 - [ ] Message IDs are proper UUIDs
@@ -33,6 +36,7 @@
 - [ ] Messages are saved with embeddings
 
 ### 4. Idea Management
+
 - [ ] Ideas can be saved from conversations
 - [ ] Smart save detection prompts appear
 - [ ] Idea review modal functions properly
@@ -44,6 +48,7 @@
 - [ ] Branching ideas works correctly
 
 ### 5. Feedback System
+
 - [ ] Thumbs up/down buttons work
 - [ ] 5-star ratings can be submitted
 - [ ] Feedback is stored in database
@@ -53,6 +58,7 @@
 - [ ] Feedback contributes to learning patterns
 
 ### 6. Self-Improvement System
+
 - [ ] Dynamic prompts load from database
 - [ ] A/B tests assign users to groups
 - [ ] Prompt analytics dashboard shows data
@@ -61,12 +67,14 @@
 - [ ] Personal context tracks user preferences
 
 ### 7. Discovery Features
+
 - [ ] Public ideas appear in discover page
 - [ ] View counts increment
 - [ ] Like functionality works
 - [ ] Idea stats update correctly
 
 ### 8. Developer Tools
+
 - [ ] Dev panel (🐛 button) appears in development
 - [ ] Console logs are captured
 - [ ] Database logs are stored
@@ -75,6 +83,7 @@
 - [ ] Network monitoring works
 
 ### 9. Error Handling
+
 - [ ] Sentry captures client-side errors
 - [ ] Sentry captures server-side errors
 - [ ] Error boundaries prevent app crashes
@@ -83,6 +92,7 @@
 - [ ] Rate limiting prevents abuse
 
 ### 10. Performance
+
 - [ ] Health dashboard loads and updates
 - [ ] API response times are acceptable (<2s)
 - [ ] Database queries use indexes efficiently
@@ -91,6 +101,7 @@
 - [ ] No memory leaks in long sessions
 
 ### 11. UI/UX Polish
+
 - [ ] All animations work smoothly
 - [ ] Mobile responsive design works
 - [ ] Dark mode compatibility (if applicable)
@@ -100,6 +111,7 @@
 - [ ] Floating buttons positioned correctly
 
 ### 12. Security
+
 - [ ] API keys are not exposed to client
 - [ ] RLS policies enforce data isolation
 - [ ] Input validation prevents injection
@@ -110,6 +122,7 @@
 ## 🚀 Production Deployment Checklist
 
 ### Pre-Deployment
+
 - [ ] All tests pass
 - [ ] Environment variables set in production
 - [ ] Database migrations applied
@@ -117,6 +130,7 @@
 - [ ] Analytics tracking ready
 
 ### Deployment
+
 - [ ] Build completes without errors
 - [ ] Deployment to hosting platform succeeds
 - [ ] Domain/SSL configured
@@ -124,6 +138,7 @@
 - [ ] Database connection works
 
 ### Post-Deployment
+
 - [ ] Health check endpoint responds
 - [ ] Can sign in with production auth
 - [ ] Basic user flow works end-to-end
@@ -133,6 +148,7 @@
 ## 📊 Monitoring Setup
 
 ### Real-time Monitoring
+
 - [ ] Health dashboard accessible at `/health`
 - [ ] Sentry dashboard configured
 - [ ] Database metrics available
@@ -140,6 +156,7 @@
 - [ ] User activity monitored
 
 ### Alerts
+
 - [ ] Error rate alerts configured
 - [ ] Performance degradation alerts
 - [ ] Database connection alerts

@@ -13,7 +13,7 @@ This is NOT the consumer product - it's our sophisticated workspace for:
 
 ## 🚀 The Larger Vision: Poppy as a Household OS
 
-The ideas we develop here are building toward **Poppy** - an AI-powered household operating system that will revolutionize how families manage their digital lives. 
+The ideas we develop here are building toward **Poppy** - an AI-powered household operating system that will revolutionize how families manage their digital lives.
 
 Learn more: [**📖 Read the Full Vision**](./docs/VISION.md)
 
@@ -31,6 +31,7 @@ These aren't just features - they're **research into the foundations Poppy will 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - Supabase account
 - Anthropic API key
@@ -56,16 +57,19 @@ npm run dev
 ## 📚 Documentation
 
 ### Core Documentation
+
 - **[Project Status](./docs/PROJECT_STATUS.md)** - Current features and deployment status
 - **[Vision](./docs/VISION.md)** - The Poppy household OS vision
 - **[Architecture](./docs/ARCHITECTURE.md)** - Technical decisions and patterns
 - **[Development Guide](./docs/DEVELOPMENT_GUIDE.md)** - Complete setup and development
 
 ### Learning & Insights
+
 - **[Learning Insights](./docs/LEARNING_INSIGHTS.md)** - What we've discovered so far
 - **[Self-Improvement System](./docs/SELF_IMPROVEMENT_SYSTEM.md)** - How the AI learns and evolves
 
 ### Guides
+
 - **[Contributing](./CONTRIBUTING.md)** - How to contribute effectively
 - **[Deployment](./docs/guides/DEPLOYMENT.md)** - Deployment process
 - **[A/B Testing](./docs/guides/AB_TESTING.md)** - Running prompt experiments
@@ -89,15 +93,19 @@ src/
 ## 💡 Key Features for R&D
 
 ### 1. Dynamic AI Conversations
+
 Testing how AI can adapt based on feedback - essential for role-aware family assistance.
 
 ### 2. Idea Evolution Tracking
+
 Understanding how concepts develop over time - mirrors how family plans evolve.
 
 ### 3. Transparent Learning Dashboard
+
 Showing exactly how AI improves - building trust for family-level AI decisions.
 
 ### 4. Personal Context System
+
 Learning preferences and patterns - foundation for multi-family member understanding.
 
 ## 🤝 Contributing
@@ -105,6 +113,7 @@ Learning preferences and patterns - foundation for multi-family member understan
 **Read first**: [Contributing Guidelines](./CONTRIBUTING.md)
 
 Key principles:
+
 1. **Simplicity over complexity**
 2. **User control and transparency**
 3. **Consistency in patterns**
@@ -113,13 +122,14 @@ Key principles:
 ## 📈 Current Metrics
 
 - **Conversations**: 56+ logged
-- **Ideas Saved**: 10+ 
+- **Ideas Saved**: 10+
 - **Users**: 4 (founders + test)
 - **Status**: Awaiting feedback data for AI improvement
 
 ## ⚠️ Important Notes
 
 This is an **internal R&D platform**. We're learning how to build AI that can:
+
 - Orchestrate complex family logistics
 - Respect individual and family values
 - Coordinate between multiple people
