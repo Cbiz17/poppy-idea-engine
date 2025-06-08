@@ -28,31 +28,19 @@ Every feature in the Idea Engine teaches us something crucial:
 
 These aren't just features - they're **research into the foundations Poppy will need**.
 
-## 🚀 Quick Start
+## ☁️ Development Workflow
 
-### Prerequisites
+**This project uses a CLOUD-ONLY workflow. No local development!**
 
-- Node.js 18+
-- Supabase account
-- Anthropic API key
+See: [**Cloud-Only Workflow Guide**](./CLOUD-ONLY-WORKFLOW.md)
 
-### Setup in 5 Minutes
+### Quick Summary:
+1. **Edit files**: Use github.dev (press `.` in repo) or AI assistants
+2. **All changes**: Create feature branches, never commit to main
+3. **Testing**: Automatic Vercel previews on every branch
+4. **No local setup**: Everything happens in the cloud
 
-```bash
-# 1. Clone and install
-git clone https://github.com/Cbiz17/poppy-idea-engine.git
-cd poppy-idea-engine
-npm install
-
-# 2. Configure environment
-cp .env.example .env.local
-# Edit .env.local with your keys
-
-# 3. Start development
-npm run dev
-```
-
-**Full setup guide**: [📚 Development Guide](./docs/DEVELOPMENT_GUIDE.md)
+---
 
 ## 📚 Documentation
 
@@ -61,7 +49,7 @@ npm run dev
 - **[Project Status](./docs/PROJECT_STATUS.md)** - Current features and deployment status
 - **[Vision](./docs/VISION.md)** - The Poppy household OS vision
 - **[Architecture](./docs/ARCHITECTURE.md)** - Technical decisions and patterns
-- **[Development Guide](./docs/DEVELOPMENT_GUIDE.md)** - Complete setup and development
+- **[Cloud-Only Workflow](./CLOUD-ONLY-WORKFLOW.md)** - How to develop without local setup
 
 ### Learning & Insights
 
