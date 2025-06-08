@@ -27,16 +27,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Idea not found' }, { status: 404 })
     }
 
-    // Get the latest version number
-    const { data: latestHistory } = await supabase
-      .from('idea_development_history')
-      .select('version_number')
-      .eq('idea_id', ideaId)
-      .order('version_number', { ascending: false })
-      .limit(1)
-      .single()
-
-    const newVersionNumber = (latestHistory?.version_number || 0) + 1
+    // No version_number column exists, so we'll track versions by count
 
     // Create a new development history entry
     const { data: newHistory, error: historyError } = await supabase
@@ -44,20 +35,20 @@ export async function POST(req: Request) {
       .insert({
         idea_id: ideaId,
         user_id: user.id,
-        previous_title: currentIdea.title,
-        new_title: currentIdea.title,
-        previous_content: currentIdea.content,
-        new_content: initialContent || currentIdea.content,
-        development_type: 'branch',
+        previous_version: {
+          title: currentIdea.title,
+          content: currentIdea.content,
+          category: currentIdea.category
+        },
+        new_version: {
+          title: currentIdea.title,
+          content: initialContent || currentIdea.content,
+          category: currentIdea.category,
+          branch_name: branchName
+        },
+        development_type: 'refinement', // Using valid enum value
         change_summary: `Created new branch: ${branchName}`,
-        branch_name: branchName,
-        version_number: newVersionNumber,
-        ai_confidence_score: 1.0,
-        tags: ['branch', 'experimental'],
-        development_metadata: {
-          branch_created_at: new Date().toISOString(),
-          branch_purpose: 'experimental'
-        }
+        ai_confidence_score: 1.0
       })
       .select()
       .single()
@@ -158,33 +149,26 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Failed to update idea' }, { status: 500 })
     }
 
-    // Get version number for merge record
-    const { data: latestHistory } = await supabase
-      .from('idea_development_history')
-      .select('version_number')
-      .eq('idea_id', targetIdeaId)
-      .order('version_number', { ascending: false })
-      .limit(1)
-      .single()
-
-    const newVersionNumber = (latestHistory?.version_number || 0) + 1
-
     // Record the merge in history
     const { data: mergeHistory, error: mergeHistoryError } = await supabase
       .from('idea_development_history')
       .insert({
         idea_id: targetIdeaId,
         user_id: user.id,
-        previous_content: targetIdea.content,
-        new_content: mergedContent,
-        previous_title: targetIdea.title,
-        new_title: targetIdea.title,
+        previous_version: {
+          title: targetIdea.title,
+          content: targetIdea.content,
+          category: targetIdea.category
+        },
+        new_version: {
+          title: targetIdea.title,
+          content: mergedContent,
+          category: targetIdea.category,
+          merge_source_id: sourceHistoryId,
+          merge_metadata: mergeMetadata
+        },
         development_type: 'merge',
-        change_summary: `Merged branch "${sourceHistory.branch_name || 'unnamed'}" into main`,
-        merge_source_id: sourceHistoryId,
-        version_number: newVersionNumber,
-        tags: ['merge', sourceHistory.branch_name || 'branch'],
-        development_metadata: mergeMetadata,
+        change_summary: `Merged branch "${sourceHistory.new_version?.branch_name || 'unnamed'}" into main`,
         ai_confidence_score: 0.9
       })
       .select()
@@ -273,7 +257,7 @@ interface HistoryTreeItem {
   branch_name?: string;
   depth: number;
   created_at: string;
-  version_number: number;
+  version_number?: number;
   parent_id?: string;
 }
 
@@ -285,7 +269,7 @@ function transformToNodes(historyTree: HistoryTreeItem[]) {
     branch: item.branch_name,
     depth: item.depth,
     date: item.created_at,
-    version: item.version_number
+    version: item.version_number || 0
   }))
 }
 

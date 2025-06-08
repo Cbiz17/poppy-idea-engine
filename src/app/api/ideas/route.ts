@@ -1,31 +1,26 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { generateIdeaEmbedding } from '@/lib/embeddings';
-import type { 
-  CreateIdeaInput, 
-  DatabaseIdea, 
-  DatabaseIdeaWithBranches,
-  IdeasListResponse,
-  IdeaResponse,
-  ErrorResponse 
-} from '@/types/api.types';
+import OpenAI from 'openai';
 
-function validateIdeaInput(input: any): { valid: boolean; error?: string } {
-  if (!input.title || typeof input.title !== 'string' || input.title.length > 200) {
-    return { valid: false, error: 'Title is required and must be less than 200 characters' };
-  }
-  if (!input.content || typeof input.content !== 'string' || input.content.length > 50000) {
-    return { valid: false, error: 'Content is required and must be less than 50000 characters' };
-  }
-  if (!input.category || typeof input.category !== 'string') {
-    return { valid: false, error: 'Category is required' };
-  }
-  return { valid: true };
-}
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const EMBEDDING_MODEL = 'text-embedding-ada-002';
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json() as CreateIdeaInput;
+    const {
+      title,
+      content,
+      category,
+      conversationId,
+      continuationContext,
+      originalIdeaId,
+      branchedFromId,
+      branchNote,
+      isBranch
+    } = await req.json();
     
     const supabase = await createServerSupabaseClient();
     
@@ -33,61 +28,61 @@ export async function POST(req: Request) {
     
     if (userError || !user) {
       console.error('Auth error:', userError);
-      return NextResponse.json<ErrorResponse>({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
     // Validate input
-    const validation = validateIdeaInput(body);
-    if (!validation.valid) {
-      return NextResponse.json<ErrorResponse>({ error: validation.error! }, { status: 400 });
+    if (!title || !content || !category) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
-    const {
+    // Generate embedding
+    let embedding = null;
+    try {
+      if (process.env.OPENAI_API_KEY) {
+        const inputText = `${title} ${content}`.replace(/\n/g, ' ');
+        
+        const embeddingResponse = await openai.embeddings.create({
+          model: EMBEDDING_MODEL,
+          input: inputText,
+        });
+        
+        embedding = embeddingResponse?.data?.[0]?.embedding;
+      }
+    } catch (embedError) {
+      console.error('Error generating embedding:', embedError);
+      // Continue without embedding
+    }
+    
+    const ideaData: any = {
+      user_id: user.id,
       title,
       content,
       category,
-      conversationId,
-      continuationContext,
-      branchedFromId,
-      branchNote,
-      isBranch,
-      metadata
-    } = body;
-    
-    // Generate embedding
-    const embedding = await generateIdeaEmbedding(title, content);
-    
-    // Build idea data with proper typing
-    const ideaData: Partial<DatabaseIdea> = {
-      user_id: user.id,
-      title: title.trim(),
-      content: content.trim(),
-      category: category.trim(),
       embedding,
-      development_count: isBranch ? 1 : 0,
-      is_public: false,
-      is_branch: false,
-      archived: false,
-      pinned: false,
-      development_stage: 'initial'
-    };
+      development_count: isBranch ? 1 : 0
+    }
     
     // Add branching fields if provided
     if (branchedFromId) {
-      ideaData.branched_from_id = branchedFromId;
-      ideaData.branch_note = branchNote || null;
-      ideaData.is_branch = true;
+      ideaData.branched_from_id = branchedFromId
+      // Store branch note in metadata since branch_note column doesn't exist
+      ideaData.metadata = {
+        ...(ideaData.metadata || {}),
+        branch_note: branchNote,
+        is_branch: true
+      }
     }
     
     const { data: newIdea, error: createError } = await supabase
       .from('ideas')
       .insert(ideaData)
       .select()
-      .single<DatabaseIdea>();
+      .single();
       
     if (createError) {
       console.error('Error creating idea:', createError);
-      return NextResponse.json<ErrorResponse>({ 
+      return NextResponse.json({ 
         error: 'Failed to create idea',
         details: createError.message 
       }, { status: 500 });
@@ -106,62 +101,11 @@ export async function POST(req: Request) {
       });
     }
     
-    // Track version history for branches
-    if (isBranch && branchedFromId) {
-      try {
-        // Get the parent idea details
-        const { data: parentIdea } = await supabase
-          .from('ideas')
-          .select('title, content, category')
-          .eq('id', branchedFromId)
-          .single<Pick<DatabaseIdea, 'title' | 'content' | 'category'>>();
-          
-        if (parentIdea) {
-          const previousVersion = {
-            title: parentIdea.title,
-            content: parentIdea.content,
-            category: parentIdea.category,
-            timestamp: new Date().toISOString()
-          };
-          
-          const newVersion = {
-            title,
-            content,
-            category,
-            timestamp: new Date().toISOString()
-          };
-          
-          await supabase
-            .from('idea_development_history')
-            .insert({
-              idea_id: newIdea.id,
-              user_id: user.id,
-              conversation_id: conversationId,
-              development_type: 'branch',
-              previous_version: previousVersion,
-              new_version: newVersion,
-              change_summary: branchNote || 'Branched from parent idea',
-              ai_confidence_score: metadata?.confidence || 1.0,
-              version_number: 1,
-              development_metadata: {
-                branch_from_id: branchedFromId,
-                branch_note: branchNote,
-                source: 'branch_creation',
-                ...(metadata || {})
-              }
-            });
-        }
-      } catch (historyError) {
-        console.error('Error tracking branch history:', historyError);
-        // Non-critical, continue
-      }
-    }
-    
-    return NextResponse.json<IdeaResponse>({ idea: newIdea });
+    return NextResponse.json({ idea: newIdea });
     
   } catch (error) {
     console.error('Error creating idea:', error);
-    return NextResponse.json<ErrorResponse>({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -172,22 +116,10 @@ export async function GET(req: Request) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
-      return NextResponse.json<ErrorResponse>({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // Add pagination support
-    const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100); // Max 100 per page
-    const offset = (page - 1) * limit;
-    
-    // Get total count
-    const { count } = await supabase
-      .from('ideas')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id);
-    
-    // Get paginated ideas with branch count
+    // Get ideas with branch count
     const { data: ideas, error } = await supabase
       .from('ideas')
       .select(`
@@ -195,32 +127,23 @@ export async function GET(req: Request) {
         branches:ideas!branched_from_id(id, title)
       `)
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order('created_at', { ascending: false });
       
     if (error) {
       console.error('Error fetching ideas:', error);
-      return NextResponse.json<ErrorResponse>({ error: 'Failed to fetch ideas' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch ideas' }, { status: 500 });
     }
     
-    // Process ideas to include branch count with proper typing
-    const processedIdeas: DatabaseIdeaWithBranches[] = (ideas || []).map(idea => ({
-      ...idea as DatabaseIdea,
+    // Process ideas to include branch count
+    const processedIdeas = ideas?.map(idea => ({
+      ...idea,
       branches: idea.branches || []
-    }));
+    })) || [];
     
-    return NextResponse.json<IdeasListResponse>({ 
-      ideas: processedIdeas,
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
-      }
-    });
+    return NextResponse.json({ ideas: processedIdeas });
     
   } catch (error) {
     console.error('Error:', error);
-    return NextResponse.json<ErrorResponse>({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
