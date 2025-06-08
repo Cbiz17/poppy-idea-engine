@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { formatDistanceToNow } from 'date-fns'
 
 interface IdeaVersion {
   id: string
@@ -20,6 +19,20 @@ interface IdeaHistoryModalProps {
   ideaId: string
   ideaTitle: string
   onClose: () => void
+}
+
+// Simple function to format relative time
+function formatDistanceToNow(date: Date): string {
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  if (diffInSeconds < 60) return 'just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 604800)} weeks ago`
+  if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`
+  return `${Math.floor(diffInSeconds / 31536000)} years ago`
 }
 
 export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }: IdeaHistoryModalProps) {
@@ -130,7 +143,7 @@ export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }:
                       <div>
                         <h3 className="font-bold text-gray-900">Current Version</h3>
                         <p className="text-sm text-gray-600">
-                          Last updated {formatDistanceToNow(new Date(currentIdea?.updated_at || Date.now()))} ago
+                          Last updated {formatDistanceToNow(new Date(currentIdea?.updated_at || Date.now()))}
                         </p>
                       </div>
                     </div>
@@ -178,7 +191,7 @@ export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }:
                               )}
                             </div>
                             <p className="text-sm text-gray-600 mt-1">
-                              {formatDistanceToNow(new Date(version.created_at))} ago
+                              {formatDistanceToNow(new Date(version.created_at))}
                             </p>
                           </div>
                         </div>
@@ -219,7 +232,7 @@ export default function IdeaHistoryModal({ isOpen, ideaId, ideaTitle, onClose }:
                     <div>
                       <h4 className="font-medium text-gray-900">Original Idea</h4>
                       <p className="text-sm text-gray-600">
-                        Created {formatDistanceToNow(new Date(currentIdea?.created_at || Date.now()))} ago
+                        Created {formatDistanceToNow(new Date(currentIdea?.created_at || Date.now()))}
                       </p>
                     </div>
                   </div>
