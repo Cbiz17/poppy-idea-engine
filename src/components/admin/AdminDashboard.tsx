@@ -79,8 +79,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       
       const uniqueUsers = new Set(activeUsersData?.map(a => a.user_id) || [])
       
-      // Calculate average rating
-      const ratings = feedbackData?.filter(f => f.feedback_value).map(f => f.feedback_value) || []
+      // Calculate average rating - properly convert thumbs up/down to 5-star scale
+      const ratings = feedbackData?.map(f => {
+        if (f.feedback_type === 'thumbs_up') return 5
+        if (f.feedback_type === 'thumbs_down') return 1
+        if (f.feedback_type === 'rating' && f.feedback_value) return f.feedback_value
+        return null
+      }).filter(r => r !== null) || []
+      
       const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
       
       // Determine trend (compare last week to previous week)
