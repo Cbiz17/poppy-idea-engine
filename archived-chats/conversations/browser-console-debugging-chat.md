@@ -14,6 +14,7 @@ I'll help you get up to speed on the poppy-idea-engine project and explore bette
 [Note: The conversation appears to have been cut off during Claude's investigation of the project structure and database queries]
 
 ## Key Topics Discussed:
+
 - Browser console debugging challenges
 - Copy/paste difficulties from browser console
 - Interest in alternative logging and tracking solutions
@@ -21,6 +22,7 @@ I'll help you get up to speed on the poppy-idea-engine project and explore bette
 - Need to understand current state of poppy-idea-engine development
 
 ## Action Items:
+
 - Investigate current project structure
 - Understand database schema and recent activity
 - Explore better debugging/logging solutions
