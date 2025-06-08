@@ -100,6 +100,19 @@ Showing exactly how AI improves - building trust for family-level AI decisions.
 ### 4. Personal Context System
 Learning preferences and patterns - foundation for multi-family member understanding.
 
+## 🔄 Development Workflow
+
+### Branch & Deploy Strategy
+1. **Never commit to main** - always create feature branches
+2. **Automatic preview deployments** - every branch gets its own Vercel URL
+3. **Test in preview** - format: `poppy-idea-engine-[branch-name]-cbiz17.vercel.app`
+4. **Merge only after testing** - ensure preview works before merging to production
+
+### For AI Assistants (Claude)
+- Repository: `Cbiz17/poppy-idea-engine` (not cbikis)
+- See `.claude/preferences.md` for complete workflow instructions
+- Never test locally - always use Vercel previews
+
 ## 🤝 Contributing
 
 **Read first**: [Contributing Guidelines](./CONTRIBUTING.md)
