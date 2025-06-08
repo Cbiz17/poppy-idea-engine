@@ -1,0 +1,39 @@
+# CRITICAL: Read This First - Poppy Idea Engine
+
+## Repository Details
+- **Repository**: Cbiz17/poppy-idea-engine
+- **Owner**: Cbiz17 (NOT cbikis or any other variation)
+- **Production URL**: poppy-idea-engine.vercel.app
+
+## Workflow Rules - MANDATORY
+
+### 1. NEVER Test Locally
+- No `npm run dev` on local machine
+- No localhost testing
+- ONLY use Vercel preview deployments
+
+### 2. Branch Strategy
+- NEVER commit directly to main
+- Create feature branches for EVERYTHING
+- Branch names: fix/issue-name, feature/feature-name, update/what-updating
+
+### 3. Deployment Process
+1. Create branch
+2. Push changes
+3. Vercel automatically creates preview: poppy-idea-engine-[branch]-cbiz17.vercel.app
+4. Test in preview URL
+5. Only merge after testing passes
+
+### 4. Database Reminders
+- Database has specific columns - always check schema
+- Ideas table has: branch_note, is_branch, branched_from_id
+- NO metadata column exists in ideas table
+
+## Quick Reference
+- Full preferences: .claude/preferences.md
+- Project docs: docs/
+- When in doubt, create a branch and test in preview
+
+## GitHub Token
+- Will be provided in chat when needed
+- Always ask if not provided
