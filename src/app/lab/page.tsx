@@ -21,14 +21,14 @@ export default async function LabPage() {
     .eq('prompt_type', 'system_message')
     .order('prompt_version', { ascending: false })
 
-  // Fetch recent feedback
+  // Fetch recent feedback - CHANGED from 7 days to 30 days
   const { data: recentFeedback } = await supabase
     .from('message_feedback')
     .select(`
       *,
       conversation_messages(content, role)
     `)
-    .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+    .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
     .order('created_at', { ascending: false })
     .limit(50)
 
