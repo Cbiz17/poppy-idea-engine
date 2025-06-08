@@ -186,10 +186,12 @@ function determineDevelopmentType(oldIdea: IdeaData, newIdea: IdeaData): string 
   
   if (contentChangeRatio > 0.5 && titleChanged) {
     return 'major_revision';
+  } else if (contentChangeRatio > 0.3) {
+    return 'expansion';
+  } else if (categoryChanged && (contentChanged || titleChanged)) {
+    return 'pivot';
   } else if (contentChanged || titleChanged) {
     return 'refinement';
-  } else if (categoryChanged) {
-    return 'refinement'; // categorization_change isn't in the enum
   } else {
     return 'refinement';
   }
@@ -267,6 +269,14 @@ export async function POST(
     // If this is a variation of an existing idea, track it
     if (saveType === 'new' && originalId) {
       try {
+        // Create the version objects in the correct format
+        const previousVersion = {
+          title: '',
+          content: '',
+          category: category,
+          timestamp: new Date().toISOString()
+        };
+
         const newVersion = {
           title: title.trim(),
           content: content.trim(),
@@ -279,11 +289,12 @@ export async function POST(
           .insert({
             idea_id: newIdea.id,
             user_id: user.id,
-            previous_version: {},
+            previous_version: previousVersion,
             new_version: newVersion,
-            development_type: 'refinement', // 'new_variation' isn't in the enum
+            development_type: 'branch',
             change_summary: `Created as a variation of existing idea`,
-            ai_confidence_score: 1.0
+            ai_confidence_score: 1.0,
+            version_number: 1
           });
       } catch (historyError) {
         console.error('Error tracking history:', historyError);
