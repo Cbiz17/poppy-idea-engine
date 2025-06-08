@@ -206,10 +206,17 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
     )
     setHasValueableContent(hasValuable)
     
-    if (messages.length > 3 && hasValuable) {
+    // Only show floating save button if:
+    // 1. There's valuable content
+    // 2. More than 3 messages
+    // 3. NOT in idea development mode (no currentIdeaContext)
+    // 4. NOT already detected as a continuation
+    if (messages.length > 3 && hasValuable && !currentIdeaContext && !continuationContext) {
       setShowFloatingSave(true)
+    } else {
+      setShowFloatingSave(false)
     }
-  }, [messages])
+  }, [messages, currentIdeaContext, continuationContext])
 
   // Smart continuation detection
   useEffect(() => {
